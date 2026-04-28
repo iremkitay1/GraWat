@@ -1,0 +1,253 @@
+﻿@using System.Security.Claims
+@using GraWat.Data
+@inject ApplicationDbContext _context
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - GraWat</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/GraWat.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        /* 1. SAYFA TEMELLERİ */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: hidden;
+        }
+
+        /* 2. NAVBAR (EN ÜSTTE ÇİVİLİ) */
+        .navbar {
+            background-color: #3b0f42 !important;
+            border-bottom: 2px solid #FFCC00 !important;
+            position: fixed !important; /* SAYFAYA ÇİVİLER */
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 99999 !important; /* HER ŞEYİN ÜSTÜNDE */
+            height: 70px !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        /* 3. İÇERİK ALANI (Navbar'ın altından başlar) */
+        .main-layout-wrapper {
+            margin-top: 70px !important; /* Navbar yüksekliği kadar boşluk */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 70px);
+            background-color: #8c2c9c !important;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        /* 4. LİNKLER VE LOGO */
+        .nav-link, .navbar-brand {
+            color: #FFCC00 !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+            .nav-link:hover, .navbar-brand:hover {
+                color: #FFF !important;
+                text-shadow: 0px 0px 8px #FFCC00;
+            }
+
+        /* 5. GİRİŞ/KAYIT FORMLARI (ŞIK PANEL) */
+        .main-layout-wrapper form {
+            background: rgba(255, 255, 255, 0.15) !important;
+            padding: 35px !important;
+            border-radius: 20px !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            width: 100% !important;
+            max-width: 450px !important;
+            margin: 0 auto !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+        }
+
+        .main-layout-wrapper label {
+            color: black !important;
+            font-weight: 600 !important;
+            margin-top: 10px !important;
+            display: block !important;
+            text-align: left !important;
+        }
+
+        .main-layout-wrapper .btn-primary {
+            background-color: #FFCC00 !important;
+            border-color: #FFCC00 !important;
+            color: #3b0f42 !important;
+            font-weight: bold !important;
+            width: 100%;
+        }
+
+        /* Gereksiz kısımları gizle */
+        .main-layout-wrapper section h4:contains("another service"),
+        .main-layout-wrapper hr + section {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm shadow-sm fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand fs-3 grawat-logo"
+                   data-bs-toggle="offcanvas"
+                   href="#kategoriMenu"
+                   style="cursor: pointer; font-family: 'Mistral', sans-serif;">
+                    GraWat
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Menüyü Göster">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Urunler" asp-action="Index">Ürünler</a>
+                        </li>
+                    </ul>
+                    <form asp-controller="Home" asp-action="Index" method="get" class="d-flex mx-auto" style="max-width: 300px;">
+                        <div class="input-group">
+                            <input type="text" name="searchString" class="form-control border-0 shadow-sm"
+                                   placeholder="Ürün ara..."
+                                   style="border-radius: 25px 0 0 25px; padding-left: 20px; background-color: white; height: 35px;">
+                            <button type="submit" class="btn bg-white border-0 shadow-sm d-flex align-items-center"
+                                    style="border-radius: 0 25px 25px 0; color: black; height: 35px;">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    @{
+                        int sepetSayac = 0;
+                        if (User.Identity.IsAuthenticated)
+                        {
+                            var aktifKullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                            if (!string.IsNullOrEmpty(aktifKullaniciId))
+                            {
+                                sepetSayac = _context.SepetItems.Where(s => s.KullaniciId == aktifKullaniciId).Sum(s => s.Adet);
+                            }
+                        }
+                    }
+
+                    <ul class="navbar-nav align-items-center">
+                        @* SEPETİM BUTONU: Sadece giriş yapmış olan ve admin olmayan kullanıcılar görsün *@
+                        @if (User.Identity.IsAuthenticated && User.Identity.Name != "admin@gmail.com")
+                        {
+                            <li class="nav-item me-3">
+                                <a class="nav-link text-white fw-bold d-flex align-items-center" asp-controller="Sepet" asp-action="Index">
+                                    <i class="bi bi-cart3 fs-4 me-2"></i>
+                                    Sepetim
+                                    <span class="badge rounded-pill bg-danger ms-2 fw-normal fs-6">@sepetSayac</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                    Merhaba @User.Identity.Name!
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                                    <button type="submit" class="nav-link btn btn-link" style="border: none;">Çıkış Yap</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Kayıt Ol</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Giriş Yap</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="kategoriMenu" style="background-color: #3b0f42; color: white; width: 300px; border-right: 2px solid #FFCC00;">
+        <div class="offcanvas-header" style="border-bottom: 1px solid rgba(255, 204, 0, 0.3);">
+            <h5 class="offcanvas-title fw-bold" style="color: #FFCC00;">Kategoriler</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Kapat"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <ul class="list-group list-group-flush bg-transparent">
+                <li class="list-group-item bg-transparent border-0 py-3">
+                    <a href="/Home/Index" class="text-white text-decoration-none fw-bold fs-5 d-block px-3">
+                        <i class="bi bi-grid-fill me-2"></i> Tümü
+                    </a>
+                </li>
+
+                <li class="list-group-item bg-transparent border-0 py-2">
+                    <a href="/Home/Index?kategori=Makyaj" class="text-white text-decoration-none d-block px-3 side-link">Makyaj</a>
+                </li>
+
+                <li class="list-group-item bg-transparent border-0 py-2">
+                    <a href="/Home/Index?kategori=Cilt Bakım" class="text-white text-decoration-none d-block px-3 side-link">Cilt Bakımı</a>
+                </li>
+
+                <li class="list-group-item bg-transparent border-0 py-2">
+                    <a href="/Home/Index?kategori=Parfüm/Deodorant" class="text-white text-decoration-none d-block px-3 side-link">Parfüm / Deodorant</a>
+                </li>
+
+                <li class="list-group-item bg-transparent border-0 py-2">
+                    <a href="/Home/Index?kategori=Saç Bakım" class="text-white text-decoration-none d-block px-3 side-link">Saç Bakımı</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <style>
+        .side-link:hover {
+            color: #FFCC00 !important;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+            padding-left: 25px !important;
+        }
+    </style>
+
+    <div class="main-layout-wrapper" style="margin-top: 70px !important;">
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="border-top footer text-muted mt-5" style="border-top-color: #FFCC00 !important;">
+            <div class="container text-center text-light">
+                &copy; 2026 - GraWat Kozmetik
+            </div>
+        </footer>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

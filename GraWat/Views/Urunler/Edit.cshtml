@@ -1,0 +1,83 @@
+﻿@model GraWat.Models.Urun
+
+@{
+    ViewData["Title"] = "Ürün Düzenle";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg" style="border-top: 4px solid #FFCC00;">
+                <div class="card-header text-white text-center" style="background-color: #3b0f42;">
+                    <h3 class="mb-0 fw-bold">✏️ Ürünü Güncelle</h3>
+                </div>
+
+                <div class="card-body bg-light">
+                    <form asp-action="Edit" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Ad" class="control-label fw-bold text-dark">Ürün Adı</label>
+                            <input asp-for="Ad" class="form-control border-primary" />
+                            <span asp-validation-for="Ad" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Kategori" class="control-label fw-bold text-dark">Kategori</label>
+                            <input asp-for="Kategori" class="form-control border-primary" />
+                            <span asp-validation-for="Kategori" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Fiyat" class="control-label fw-bold text-dark">Fiyat (₺)</label>
+                                    <input asp-for="Fiyat" class="form-control border-primary" />
+                                    <span asp-validation-for="Fiyat" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <label asp-for="StokAdedi" class="control-label fw-bold text-dark">Stok Adedi</label>
+                                    <input asp-for="StokAdedi" class="form-control border-primary" />
+                                    <span asp-validation-for="StokAdedi" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-dark fw-bold">Ürün Görseli</label>
+
+                                @if (!string.IsNullOrEmpty(Model.ResimYolu))
+                                {
+                                    <div class="mb-2">
+                                        <img src="~/img/@Model.ResimYolu" style="width:80px; border-radius:5px; border:1px solid #ddd;" />
+                                        <small class="text-muted d-block">Mevcut görsel</small>
+                                    </div>
+                                }
+
+                                <input type="file" name="resimDosyasi" class="form-control" accept="image/*" />
+                                <input type="hidden" asp-for="ResimYolu" />
+                            </div>-
+                        </div>
+
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn w-100 fw-bold" style="background-color: #5c1866; color: white;">
+                                🔄 Değişiklikleri Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer text-center bg-white">
+                    <a asp-action="Index" class="text-muted text-decoration-none">← Ürün Listesine Geri Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

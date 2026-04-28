@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Sipariş Onaylandı";
+}
+
+<div class="container mt-5 py-5 text-center">
+    <div class="card shadow-lg border-0 mx-auto" style="max-width: 600px; border-radius: 20px;">
+        <div class="py-5" style="background-color: #5c1866; border-radius: 20px 20px 0 0;">
+            <i class="bi bi-check-circle-fill text-white" style="font-size: 5rem;"></i>
+            <h2 class="text-white fw-bold mt-2">Siparişin Alındı!</h2>
+        </div>
+
+        <div class="card-body py-5 bg-white">
+            <h4 class="text-dark">Harika seçimler canım! ✨</h4>
+            <p class="text-muted fs-5">GraWat'ı tercih ettiğin için teşekkür ederiz. Ürünlerin yola çıkmak üzere hazırlanıyor!</p>
+
+            <hr class="w-50 mx-auto my-4">
+
+            <div class="d-grid gap-2">
+                <a asp-controller="Home" asp-action="Index"
+                   class="btn btn-lg fw-bold shadow-sm"
+                   style="background-color: #FFCC00; color: #3b0f42; border-radius: 12px;">
+                    🛍️ Alışverişe Devam Et
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+    confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#5c1866', '#FFCC00']
+    });
+</script>

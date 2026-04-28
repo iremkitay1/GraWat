@@ -1,0 +1,78 @@
+﻿@model GraWat.Models.Urun
+
+@{
+    ViewData["Title"] = "Yeni Ürün Ekle";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg" style="border-top: 4px solid #FFCC00;">
+                <div class="card-header text-white text-center" style="background-color: #3b0f42;">
+                    <h3 class="mb-0 fw-bold">✨ Yeni Ürün Ekle</h3>
+                </div>
+
+                <div class="card-body bg-light">
+                    <form asp-action="Create" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Ad" class="control-label fw-bold text-dark">Ürün Adı</label>
+                            <input asp-for="Ad" class="form-control border-secondary" placeholder="Örn: Kırmızı Mat Ruj" />
+                            <span asp-validation-for="Ad" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Kategori" class="control-label fw-bold text-dark">Kategori</label>
+                            <input asp-for="Kategori" class="form-control border-secondary" placeholder="Örn: Dudak, Cilt..." />
+                            <span asp-validation-for="Kategori" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Fiyat" class="control-label fw-bold text-dark">Fiyat (₺)</label>
+                                    <input asp-for="Fiyat" class="form-control border-secondary" placeholder="0.00" />
+                                    <span asp-validation-for="Fiyat" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <label asp-for="StokAdedi" class="control-label fw-bold text-dark">Stok Adedi</label>
+                                    <input asp-for="StokAdedi" class="form-control border-secondary" placeholder="0" />
+                                    <span asp-validation-for="StokAdedi" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label class="control-label fw-bold text-dark">Ürün Görseli</label>
+                                    <input type="file" name="resimDosyasi" class="form-control border-secondary" accept="image/*" />
+                                    <span class="text-muted" style="font-size: 0.8rem;">Lütfen ürün fotoğrafını seçiniz (JPG, PNG).</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn w-100 fw-bold" style="background-color: #5c1866; color: white;">
+                                💾 Veritabanına Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer text-center bg-white">
+                    <a asp-action="Index" class="text-muted text-decoration-none">← Ürün Listesine Geri Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,92 @@
+﻿<form asp-controller="Sepet" asp-action="SiparisOnayla" method="post">
+    <div class="mb-3 text-start">
+        <label class="form-label fw-bold text-dark">Kart Üzerindeki İsim</label>
+        <input type="text"
+               class="form-control"
+               placeholder="Örn: İrem Kıtay"
+               oninput="this.value = this.value.replace(/[0-9]/g, '');"
+               required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold text-dark">Kart Numarası</label>
+        <input type="text"
+               id="kartNoInput"
+               class="form-control"
+               placeholder="0000 0000 0000 0000"
+               maxlength="19"
+               required>
+        <small class="text-muted">Lütfen 16 haneli kart numaranızı giriniz.</small>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold text-dark">Son Kullanma (AY/YIL)</label>
+            <input type="text"
+                   id="tarihInput"
+                   class="form-control"
+                   placeholder="05/28"
+                   maxlength="5"
+                   required>
+            <small class="text-muted">Örn: 05/28</small>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold text-dark">CVV (Güvenlik Kodu)</label>
+            <input type="text"
+                   class="form-control"
+                   placeholder="123"
+                   maxlength="3"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                   required>
+        </div>
+    </div>
+
+    <hr>
+
+    <button type="submit" class="btn btn-warning w-100 fw-bold py-3 shadow-sm" style="border-radius: 10px; font-size: 1.1rem;">
+        Ödemeyi Onayla ve Bitir 🚀
+    </button>
+    <a asp-action="Index" class="btn btn-link w-100 text-muted mt-2 text-decoration-none">Sepete Geri Dön</a>
+</form>
+<script>
+    document.getElementById('tarihInput').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); // Sadece rakamları al
+
+        if (value.length > 2) {
+            // İlk 2 rakamı al + / koy + kalan 2 rakamı al
+            e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        } else {
+            e.target.value = value;
+        }
+    });
+        document.getElementById('kartNoInput').addEventListener('input', function (e) {
+        // 1. Rakam olmayan her şeyi temizle
+        let value = e.target.value.replace(/\D/g, '');
+
+        // 2. Maksimum 16 rakam al (Fazlasına izin verme)
+        if (value.length > 16) {
+            value = value.substring(0, 16);
+        }
+
+        // 3. Her 4 rakamda bir boşluk ekle
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+
+        // 4. Input kutusuna geri yaz
+        e.target.value = formattedValue;
+    });
+
+    // EKSTRA GÜVENLİK: Form gönderilirken 16 hane kontrolü yap
+        document.querySelector('form').addEventListener('submit', function (e) {
+        // Kutuyu bulalım
+        let inputKutusu = document.getElementById('kartNoInput');
+
+        // İçindeki boşlukları silip rakamları sayalım
+        let kartNo = inputKutusu.value.replace(/\s/g, '');
+
+        if (kartNo.length !== 16) {
+            e.preventDefault(); // Sayfanın gitmesini DURDUR
+            alert("Canım kart numaran eksik, lütfen 16 hane olduğundan emin ol! ✨");
+            inputKutusu.focus(); // Kutuyu kırmızı yakalım (odaklanalım)
+        }
+    });
+</script>
