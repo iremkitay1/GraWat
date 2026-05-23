@@ -2,38 +2,88 @@
 using GraWat.Data;
 using Microsoft.AspNetCore.Authorization;
 using GraWat.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace GraWat.Controllers
 {
+    // DİKKAT: Buradaki genel [Authorize(Roles = "Admin")] kilidini KALDIRDIK.
+    // Çünkü müşterilerin de Ürünleri görmesi (Index) ve Detayına (Details) bakması gerekiyor.
     public class UrunlerController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly GraWatContext _context;
 
-        // Veritabanı köprümüzü bağlıyoruz
-        public UrunlerController(ApplicationDbContext context)
+        public UrunlerController(GraWatContext context)
         {
             _context = context;
         }
 
-        // Ürünleri Listeleme Sayfası (Herkese Açık)
-        public IActionResult Index()
+        // --- 🛍️ MÜŞTERİ SAYFALARI (HERKES GİREBİLİR) ---
+
+        public IActionResult Index(int? siparisId)
         {
-            var urunler = _context.Urunler.ToList();
-            return View(urunler);
+            if (siparisId != null)
+            {
+                var urunIdleri = _context.SiparisKalemleri
+                                        .Where(sk => sk.SiparisId == siparisId)
+                                        .Select(sk => sk.UrunId)
+                                        .ToList();
+
+                var filtrelenmişUrunler = _context.Urunler
+                                                .Where(u => urunIdleri.Contains(u.Id))
+                                                .ToList();
+
+                return View(filtrelenmişUrunler);
+            }
+
+            var tumUrunler = _context.Urunler.ToList();
+            return View(tumUrunler);
+        }
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var urun = await _context.Urunler.FirstOrDefaultAsync(m => m.Id == id);
+            if (urun == null) return NotFound();
+
+            ViewBag.Yorumlar = _context.Yorumlar
+                .Where(x => x.UrunId == id)
+                .OrderByDescending(x => x.Tarih)
+                .ToList();
+
+            return View(urun);
+        }
+
+        [HttpPost]
+        [Authorize] // Sadece giriş yapan müşteriler yorum ekleyebilir (Admin olması şart değil)
+        public async Task<IActionResult> YorumEkle(int UrunId, int Puan, string YorumMetni)
+        {
+            if (!string.IsNullOrEmpty(YorumMetni))
+            {
+                var yeniYorum = new Yorum
+                {
+                    UrunId = UrunId,
+                    Puan = Puan,
+                    YorumMetni = YorumMetni,
+                    KullaniciId = User.Identity.Name,
+                    KullaniciAdi = User.Identity.Name.Split('@')[0],
+                    Tarih = DateTime.Now
+                };
+
+                _context.Yorumlar.Add(yeniYorum);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id = UrunId });
         }
 
 
+        // --- 👑 ADMİN PANELİ İŞLEMLERİ (KİLİTLİ ALANLAR) ---
+        // Aşağıdaki tüm işlemler sadece Adminlere özeldir!
 
-        // --- ---
-
-        // 1. Ürün Ekleme Sayfasını Açan Kod (Sadece Admin Girebilir)
         [Authorize(Roles = "Admin")]
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
-        // 2. Form Doldurulup "Kaydet" Butonuna Basıldığında Çalışan Kod
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -43,31 +93,21 @@ namespace GraWat.Controllers
             {
                 if (resimDosyasi != null && resimDosyasi.Length > 0)
                 {
-                    // Dosyaya eşsiz bir isim veriyoruz (Çakışma olmasın diye)
                     var dosyaAdi = Guid.NewGuid().ToString() + Path.GetExtension(resimDosyasi.FileName);
-
-                    // Klasör yolunu belirliyoruz
                     var yol = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", dosyaAdi);
-
-                    // Dosyayı klasöre kopyalıyoruz
                     using (var stream = new FileStream(yol, FileMode.Create))
                     {
                         await resimDosyasi.CopyToAsync(stream);
                     }
-
-                    // Veritabanına ismini yazıyoruz
                     urun.ResimYolu = dosyaAdi;
                 }
-                _context.Add(urun); // Veriyi veritabanı sırasına al
-                await _context.SaveChangesAsync(); // SQL Server'a kalıcı olarak kaydet
-                return RedirectToAction(nameof(Index)); // Kayıt bitince ürün listesine geri dön
+                _context.Add(urun);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
             return View(urun);
         }
 
-        // --- 
-
-        // --- TAM KAPSAMLI ADMİN PANELİ: DÜZENLEME (EDIT) İŞLEMLERİ ---
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -87,28 +127,22 @@ namespace GraWat.Controllers
             {
                 if (resimDosyasi != null && resimDosyasi.Length > 0)
                 {
-                    // Yeni bir resim seçildiyse:
                     var dosyaAdi = Guid.NewGuid().ToString() + Path.GetExtension(resimDosyasi.FileName);
                     var yol = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img", dosyaAdi);
-
                     using (var stream = new FileStream(yol, FileMode.Create))
                     {
                         await resimDosyasi.CopyToAsync(stream);
                     }
-
-                    // Yeni resmin adını modele veriyoruz
                     urun.ResimYolu = dosyaAdi;
                 }
                 _context.Update(urun);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index)); // İşlem bitince listeye dön
+                return RedirectToAction(nameof(Index));
             }
             return View(urun);
         }
 
-        // --- TAM KAPSAMLI ADMİN PANELİ: SİLME (DELETE) İŞLEMLERİ ---
-
-        // 1. Silme onay sayfasını açar (GET)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -117,9 +151,9 @@ namespace GraWat.Controllers
             return View(urun);
         }
 
-        // 2. Sayfadaki "Sil" butonuna basınca asıl silmeyi yapan kod (POST)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var urun = await _context.Urunler.FindAsync(id);
@@ -128,9 +162,30 @@ namespace GraWat.Controllers
                 _context.Urunler.Remove(urun);
                 await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(Index)); // Silme bitince listeye dön
+            return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Yorumlar()
+        {
+            var yorumlar = await _context.Yorumlar
+                .OrderByDescending(y => y.Tarih)
+                .ToListAsync();
 
+            return View(yorumlar);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> YorumSil(int id)
+        {
+            var yorum = await _context.Yorumlar.FindAsync(id);
+            if (yorum != null)
+            {
+                _context.Yorumlar.Remove(yorum);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Yorumlar));
+        }
     }
 }

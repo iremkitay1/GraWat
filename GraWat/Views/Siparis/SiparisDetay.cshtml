@@ -1,0 +1,123 @@
+﻿@model GraWat.Models.Siparis
+
+@{
+    ViewData["Title"] = "Sipariş Detayı";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <!-- Üst Başlık Paneli -->
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+            <h4 class="mb-0 text-white"><i class="bi bi-receipt"></i> Sipariş Detayı #@Model.Id</h4>
+            <a asp-action="TumSiparisler" class="btn btn-outline-warning btn-sm">
+                <i class="bi bi-arrow-left"></i> Listeye Dön
+            </a>
+        </div>
+
+        <div class="card-body p-4 text-start bg-white">
+            <div class="row">
+                <!-- Sol Taraf: Müşteri ve Durum Bilgileri -->
+                <div class="col-md-6 border-end">
+                    <h5 class="text-primary mb-3 border-bottom pb-2">📦 Sipariş Bilgileri</h5>
+
+                    <div class="mb-3">
+                        <label class="fw-bold text-dark d-block">Müşteri Kimliği (ID):</label>
+                        <span class="badge bg-light text-dark border p-2">@Model.KullaniciId</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold text-dark d-block">Sipariş Zamanı:</label>
+                        <p class="text-secondary">@Model.SiparisTarihi.ToString("dd MMMM yyyy HH:mm")</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold text-dark d-block">Güncel Durum:</label>
+                        <span class="badge @(Model.Durum == "Hazırlanıyor" ? "bg-warning text-dark" : "bg-success") px-3 py-2 fs-6 rounded-pill">
+                            @Model.Durum
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Sağ Taraf: Ödeme ve Tutar Bilgileri -->
+                <div class="col-md-6 ps-md-4">
+                    <h5 class="text-primary mb-3 border-bottom pb-2">💳 Ödeme Özeti</h5>
+
+                    <div class="p-4 bg-light rounded-4 border shadow-sm text-center">
+                        <p class="text-dark mb-1 fw-bold">Seçilen Ödeme Yöntemi</p>
+                        <span class="badge bg-info text-dark mb-3 px-4 py-2 fs-6">
+                            <i class="bi bi-wallet2 me-2"></i> @Model.OdemeYontemi
+                        </span>
+
+                        <hr class="my-3">
+
+                        <p class="text-muted mb-0 small uppercase fw-bold">TOPLAM TAHSİLAT</p>
+                        <h2 class="text-success fw-bold">@Model.ToplamTutar.ToString("C2")</h2>
+                    </div>
+
+                    <div class="alert alert-info mt-3 border-0 shadow-sm small">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Bu sipariş <strong>@Model.OdemeYontemi</strong> yöntemi ile işleme alınmıştır.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alt Kısım: Aksiyon Butonları -->
+            <div class="mt-4 pt-4 border-top text-center">
+                <button class="btn btn-primary btn-lg px-5 shadow-sm me-2" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i> Fişi Yazdır
+                </button>
+                <!-- Form ile Controller'daki SiparisiTamamla metodunu tetikliyoruz -->
+                <form asp-action="SiparisiTamamla" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    @if (Model.Durum == "Hazırlandı")
+                    {
+                        <button type="button" class="btn btn-success btn-lg px-5 shadow-sm" disabled>
+                            <i class="bi bi-check-circle-fill me-2"></i> Sipariş Hazırlandı
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="submit" class="btn btn-outline-success btn-lg px-5 shadow-sm">
+                            <i class="bi bi-check-all me-2"></i> Tamamlandı Olarak İşaretle
+                        </button>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Admin panelinde yazıların net görünmesi için zorunlu renk ayarı */
+    .text-dark {
+        color: #212529 !important;
+    }
+
+    /* Sayfa açılış animasyonu */
+    .card {
+        animation: slideInUp 0.5s ease-out;
+    }
+
+    @@keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Yazdırma modunda butonları gizle */
+    @@media print {
+        .btn, .card-header a {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>

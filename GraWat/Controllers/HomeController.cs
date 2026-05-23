@@ -2,44 +2,45 @@
 using GraWat.Data;
 using GraWat.Models;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore; // ToListAsync ve AsQueryable için gerekli
 
 namespace GraWat.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _context; // Veritabanı köprümüz
+        // DEĞİŞİKLİK: Artık GraWatContext kullanıyoruz!
+        private readonly GraWatContext _context;
 
-        // Constructor (Kurucu Metot) güncellendi
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        // Constructor: Buradaki tipi de GraWatContext yaptık
+        public HomeController(ILogger<HomeController> logger, GraWatContext context)
         {
             _logger = logger;
             _context = context;
         }
 
-        // 1. Parametre kısmına searchString ekledik
         public IActionResult Index(string kategori, string searchString)
         {
-            // 1. Veritabanındaki ürünlerimizi bir sorgu olarak hazırlıyoruz
             var urunlerQuery = _context.Urunler.AsQueryable();
 
-            // 2. EĞER arama kutusuna bir şey yazılmışsa... (YENİ KISIM)
+            // Arama Çubuğu Filtrelemesi
             if (!string.IsNullOrEmpty(searchString))
             {
-                // Ürün adında aranan kelime geçenleri filtrele
                 urunlerQuery = urunlerQuery.Where(u => u.Ad.Contains(searchString));
-
-                // Arama kelimesini sayfada gösterebilmek için Viewbag'e atalım
                 ViewBag.ArananKelime = searchString;
             }
 
-            // 3. EĞER dışarıdan (çekmeceden) bir kategori ismi gelmişse...
+            // KRİTİK DÜZELTME: Kategori Filtrelemesi (Büyük/Küçük Harf ve Türkçe Karakter Uyumlu)
             if (!string.IsNullOrEmpty(kategori))
             {
-                urunlerQuery = urunlerQuery.Where(u => u.Kategori == kategori);
+                // Linkten gelen "Cilt Bakım" kelimesini tamamen küçük harfe çeviriyoruz: "cilt bakım"
+                string aranan = kategori.Trim().ToLower();
+
+                // Veritabanındaki "Cilt Bakımı" değerini de küçük harfe çevirip 
+                // linkten gelen "cilt bakım" kelimesini içeriyor mu diye bakıyoruz:
+                urunlerQuery = urunlerQuery.Where(u => u.Kategori.ToLower().Contains(aranan) || aranan.Contains(u.Kategori.ToLower()));
             }
 
-            // 4. Sonucu listeye çevirip sayfaya (View) gönderiyoruz
             var urunlerListesi = urunlerQuery.ToList();
             return View(urunlerListesi);
         }

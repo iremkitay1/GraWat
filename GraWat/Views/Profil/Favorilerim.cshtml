@@ -1,0 +1,118 @@
+﻿@model IEnumerable<GraWat.Models.Urun>
+
+@{
+    ViewData["Title"] = "Favorilerim";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border-0 p-3" style="border-radius: 15px;">
+                <div class="text-center mb-3">
+                    <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                        👤
+                    </div>
+                    <h5 class="mt-2 fw-bold text-dark">@User.Identity?.Name</h5>
+                    <span class="badge bg-success">Kullanıcı Profili</span>
+                </div>
+                <hr />
+                <div class="nav flex-column nav-pills">
+                    <a asp-controller="Profil" asp-action="Favorilerim" class="nav-link active text-start fw-bold mb-2" style="background-color: #5c1866; color: white;">
+                        ❤️ Favorilerim
+                    </a>
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index" class="nav-link text-dark text-start fw-bold mb-2">
+                        ⚙️ Hesap Ayarları
+                    </a>
+                    <a asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" class="nav-link text-danger text-start fw-bold">
+                        🚪 Çıkış Yap
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <h3 class="fw-bold mb-0" style="color: #5c1866;">❤️ Favori Ürünlerim (@Model.Count())</h3>
+
+                    <form asp-controller="Profil" asp-action="Favorilerim" method="get" class="d-flex gap-2" style="max-width: 350px; width: 100%;">
+                        <input type="text" name="favoriArama" value="@ViewBag.FavoriAramaKelimesi" class="form-control rounded-pill" placeholder="Favorilerimde ara..." />
+                        <button type="submit" class="btn text-white rounded-pill px-3" style="background-color: #5c1866;">
+                            Ara
+                        </button>
+                        @if (!string.IsNullOrEmpty(ViewBag.FavoriAramaKelimesi))
+                        {
+                            <a asp-controller="Profil" asp-action="Favorilerim" class="btn btn-outline-secondary rounded-pill">X</a>
+                        }
+                    </form>
+                </div>
+
+                @if (Model != null && Model.Any())
+                {
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+                        @foreach (var urun in Model)
+                        {
+                            <div class="col">
+                                <div class="card h-100 shadow-sm border-0 urun-karti">
+
+                                    <div class="position-relative w-100" style="padding-top: 100%; background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); border-radius: 15px 15px 0 0; overflow: hidden;">
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center p-3">
+                                            @if (!string.IsNullOrEmpty(urun.ResimYolu))
+                                            {
+                                                <img src="/img/@urun.ResimYolu" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;" alt="@urun.Ad" />
+                                            }
+                                            else
+                                            {
+                                                <span style="font-size: 3rem;">💄</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body text-center mt-2 pb-0">
+                                        <span class="badge bg-dark mb-2 px-3 py-1 rounded-pill">@urun.Kategori</span>
+                                        <h6 class="card-title fw-bold text-truncate" title="@urun.Ad">@urun.Ad</h6>
+                                        <h5 class="text-success fw-bold mt-2">@urun.Fiyat.ToString("C")</h5>
+                                    </div>
+
+                                    <div class="card-footer bg-white border-0 text-center pb-3 pt-2">
+                                        <div class="d-grid gap-2">
+                                            <a asp-controller="Sepet" asp-action="Ekle" asp-route-id="@urun.Id" class="btn btn-sm btn-outline-dark rounded-pill fw-bold">
+                                                <i class="bi bi-cart-plus"></i> Sepete Ekle
+                                            </a>
+                                            <a asp-controller="Profil" asp-action="FavoriIslemi" asp-route-id="@urun.Id" class="btn btn-sm btn-danger text-white rounded-pill fw-bold">
+                                                ❌ Kaldır
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <span style="font-size: 3rem;">🔍</span>
+                        <p class="mt-2 lead">Favorilerinizde ürün bulunamadı.</p>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-sm text-white rounded-pill px-4 mt-2" style="background-color: #5c1866;">Alışverişe Başla</a>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .urun-karti {
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .urun-karti:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+</style>

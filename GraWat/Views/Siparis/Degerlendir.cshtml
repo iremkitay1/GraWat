@@ -1,0 +1,93 @@
+﻿@model GraWat.Models.SiparisDegerlendirmeVM
+
+@{
+    ViewData["Title"] = "Ürünleri Değerlendir";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0 p-4" style="border-radius: 20px;">
+
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold" style="color: #5c1866;">✨ Ürünleri Değerlendir</h3>
+                    <p class="text-muted">#@Model.SiparisId numaralı siparişinizdeki ürünleri ayrı ayrı puanlayıp yorumlayabilirsiniz.</p>
+                    <hr />
+                </div>
+
+                @for (int i = 0; i < Model.Urunler.Count; i++)
+                {
+                    <div class="p-4 mb-4 border rounded-4 bg-white shadow-sm">
+
+                        <form asp-controller="Siparis" asp-action="TekliYorumKaydet" method="post">
+                            <input type="hidden" name="SiparisId" value="@Model.SiparisId" />
+                            <input type="hidden" name="UrunId" value="@Model.Urunler[i].UrunId" />
+
+                            <div class="d-flex align-items-center gap-3 bg-light p-3 rounded-3 mb-3">
+                                <div style="font-size: 2rem;">💄</div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-1">@Model.Urunler[i].UrunAd</h6>
+                                    <span class="badge bg-dark">@Model.Urunler[i].Kategori</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 text-center">
+                                <label class="form-label d-block fw-bold text-dark small mb-2">Ürüne Puanınız:</label>
+                                <div class="star-rating fs-3">
+                                    <input type="radio" id="star5_@i" name="Puan" value="5" required /><label for="star5_@i">★</label>
+                                    <input type="radio" id="star4_@i" name="Puan" value="4" /><label for="star4_@i">★</label>
+                                    <input type="radio" id="star3_@i" name="Puan" value="3" /><label for="star3_@i">★</label>
+                                    <input type="radio" id="star2_@i" name="Puan" value="2" /><label for="star2_@i">★</label>
+                                    <input type="radio" id="star1_@i" name="Puan" value="1" /><label for="star1_@i">★</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <textarea name="YorumMetni" class="form-control" rows="3" placeholder="Bu ürün hakkındaki deneyimleriniz..." style="border-radius: 12px;" required></textarea>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn text-white rounded-pill fw-bold px-4 shadow-sm" style="background-color: #5c1866;">
+                                    Sadece Bu Ürünü Değerlendir 🚀
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                }
+
+                <div class="text-center mt-3">
+                    <a asp-action="Siparislerim" class="btn btn-outline-secondary rounded-pill fw-bold px-4">
+                        Siparişlerime Geri Dön ↩
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 5px;
+    }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+
+            .star-rating input:checked ~ label,
+            .star-rating label:hover,
+            .star-rating label:hover ~ label {
+                color: #ffc107;
+            }
+</style>

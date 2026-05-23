@@ -1,44 +1,65 @@
 ﻿@page
 @model EmailModel
 @{
-    ViewData["Title"] = "Manage Email";
+    ViewData["Title"] = "E-posta Yönetimi";
     ViewData["ActivePage"] = ManageNavPages.Email;
 }
 
-<h3>@ViewData["Title"]</h3>
-<partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        <form id="email-form" method="post">
-            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
-            @if (Model.IsEmailConfirmed)
-            {
-                <div class="form-floating mb-3 input-group">
-                    <input asp-for="Email" class="form-control" placeholder="Please enter your email." disabled />
-                        <div class="input-group-append">
-                            <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
+<div class="card shadow-lg border-0 rounded-4 auth-card">
+    <div class="card-header bg-dark text-info p-4 rounded-top-4 d-flex align-items-center">
+        <i class="bi bi-envelope-paper-heart fs-2 me-3 text-warning"></i>
+        <h4 class="mb-0 fw-bold text-white">E-posta Tercihleri</h4>
+    </div>
+
+    <div class="card-body p-4 p-md-5">
+        <partial name="_StatusMessage" for="StatusMessage" />
+
+        <div class="row">
+            <div class="col-lg-8">
+                <form id="email-form" method="post">
+                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                    <!-- Mevcut E-posta -->
+                    @if (Model.IsEmailConfirmed)
+                    {
+                        <div class="form-floating mb-4 position-relative">
+                            <input asp-for="Email" class="form-control rounded-3 bg-light border-0 shadow-inner" disabled />
+                            <label asp-for="Email" class="fw-bold"><i class="bi bi-envelope-check me-2"></i>Mevcut E-posta</label>
+                            <span class="badge bg-success position-absolute top-50 end-0 translate-middle-y me-3 px-3 py-2 rounded-pill">
+                                <i class="bi bi-check-circle me-1"></i> Doğrulandı
+                            </span>
                         </div>
-                    <label asp-for="Email" class="form-label"></label>
-                </div>
-            }
-            else
-            {
-                <div class="form-floating mb-3">
-                    <input asp-for="Email" class="form-control" placeholder="Please enter your email." disabled />
-                    <label asp-for="Email" class="form-label"></label>
-                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">Send verification email</button>
-                </div>
-            }
-            <div class="form-floating mb-3">
-                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
-                <label asp-for="Input.NewEmail" class="form-label"></label>
-                <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+                    }
+                    else
+                    {
+                        <div class="form-floating mb-3 position-relative">
+                            <input asp-for="Email" class="form-control rounded-3 bg-light border-0 shadow-inner" disabled />
+                            <label asp-for="Email" class="fw-bold"><i class="bi bi-envelope-exclamation me-2"></i>Mevcut E-posta</label>
+                            <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-sm btn-outline-warning position-absolute top-50 end-0 translate-middle-y me-2 fw-bold">
+                                Doğrulama Gönder
+                            </button>
+                        </div>
+                    }
+
+                    <hr class="text-muted opacity-25 my-4">
+                    <h6 class="text-dark fw-bold mb-3">E-posta Adresini Değiştir</h6>
+
+                    <!-- Yeni E-posta -->
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.NewEmail" class="form-control rounded-3" autocomplete="email" aria-required="true" placeholder="Yeni E-posta" />
+                        <label asp-for="Input.NewEmail" class="text-muted"><i class="bi bi-envelope-plus me-2"></i>Yeni E-posta Adresi</label>
+                        <span asp-validation-for="Input.NewEmail" class="text-danger small"></span>
+                    </div>
+
+                    <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="btn btn-warning btn-lg px-5 rounded-pill fw-bold shadow-sm w-100 w-md-auto">
+                        E-postayı Değiştir <i class="bi bi-arrow-right-circle ms-2"></i>
+                    </button>
+                </form>
             </div>
-            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="w-100 btn btn-lg btn-primary">Change email</button>
-        </form>
+            <!-- Sağ Taraf İllüstrasyon -->
+            <div class="col-lg-4 d-none d-lg-flex align-items-center justify-content-center">
+                <i class="bi bi-mailbox2 text-light" style="font-size: 10rem; opacity: 0.5;"></i>
+            </div>
+        </div>
     </div>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

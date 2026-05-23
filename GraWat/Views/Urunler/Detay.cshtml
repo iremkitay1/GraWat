@@ -1,0 +1,77 @@
+﻿@model GraWat.Models.Urun
+
+@{
+    ViewData["Title"] = Model.Ad + " - GraWat Kozmetik";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row g-5">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <img src="~/img/@Model.ResimYolu" class="img-fluid w-100" alt="@Model.Ad" style="max-height: 500px; object-fit: cover;">
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h1 class="display-5 fw-bold text-dark">@Model.Ad</h1>
+            <p class="fs-4 text-success fw-bold">@Model.Fiyat.ToString("C2")</p>
+            <hr class="my-4 opacity-25">
+            <p class="text-muted lh-base">@Model.Kategori</p>
+
+            <div class="d-grid gap-2 mt-5">
+                <a href="#" class="btn btn-warning btn-lg rounded-pill fw-bold text-dark shadow">
+                    Sepete Ekle <i class="bi bi-cart-plus ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 pt-5 border-top">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-light">
+                <h5 class="fw-bold mb-3">Puan Verin ve Yorum Yapın</h5>
+                <form asp-controller="Urunler" asp-action="YorumEkle" method="post">
+                    <input type="hidden" name="UrunId" value="@Model.Id" />
+                    <div class="mb-3 text-warning fs-3 rating-area">
+                        <select name="Puan" class="form-select">
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="1">⭐</option>
+                        </select>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <textarea class="form-control" name="YorumMetni" style="height: 100px" required></textarea>
+                        <label>Yorumunuz...</label>
+                    </div>
+                    <button type="submit" class="btn btn-dark text-warning fw-bold w-100 rounded-pill">Gönder</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-7 ps-md-5">
+            <h5 class="fw-bold mb-4">Ürün Yorumları</h5>
+            @if (ViewBag.Yorumlar != null && ((List<GraWat.Models.Yorum>)ViewBag.Yorumlar).Any())
+            {
+                @foreach (var yorum in (List<GraWat.Models.Yorum>)ViewBag.Yorumlar)
+                {
+                    <div class="mb-3 p-3 bg-white shadow-sm rounded-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold small">@yorum.KullaniciAdi</span>
+                            <span class="text-warning small">@for (int i = 0; i < yorum.Puan; i++)
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                }</span>
+                        </div>
+                        <p class="mb-0 small mt-2">@yorum.YorumMetni</p>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted">Henüz yorum yapılmamış.</p>
+            }
+        </div>
+    </div>
+</div>

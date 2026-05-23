@@ -1,21 +1,16 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using GraWat.Models;
 
-namespace GraWat.Data;
-
-public class GraWatContext : IdentityDbContext<IdentityUser>
+namespace GraWat.Data
 {
-    public GraWatContext(DbContextOptions<GraWatContext> options)
-        : base(options)
+    public class GraWatContext : DbContext
     {
-    }
+        public GraWatContext(DbContextOptions<GraWatContext> options) : base(options) { }
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
-        // Customize the ASP.NET Identity model and override the defaults if needed.
-        // For example, you can rename the ASP.NET Identity table names and more.
-        // Add your customizations after calling base.OnModelCreating(builder);
+        public DbSet<Urun> Urunler { get; set; }
+        public DbSet<Yorum> Yorumlar { get; set; }
+        public DbSet<Siparis> Siparisler { get; set; }
+        public DbSet<SiparisKalemi> SiparisKalemleri { get; set; }
+        public DbSet<Favoriler> Favoriler { get; set; }
     }
 }

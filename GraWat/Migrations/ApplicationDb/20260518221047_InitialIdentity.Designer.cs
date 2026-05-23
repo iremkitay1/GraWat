@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace GraWat.Migrations
+namespace GraWat.Migrations.ApplicationDb
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260305171002_IdentityTablolariEkli")]
-    partial class IdentityTablolariEkli
+    [Migration("20260518221047_InitialIdentity")]
+    partial class InitialIdentity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,53 @@ namespace GraWat.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("GraWat.Models.Favoriler", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("KullaniciId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UrunId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UrunId");
+
+                    b.ToTable("Favoriler");
+                });
+
+            modelBuilder.Entity("GraWat.Models.SepetItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Adet")
+                        .HasColumnType("int");
+
+                    b.Property<string>("KullaniciId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UrunId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UrunId");
+
+                    b.ToTable("SepetItems");
+                });
 
             modelBuilder.Entity("GraWat.Models.Urun", b =>
                 {
@@ -42,6 +89,9 @@ namespace GraWat.Migrations
 
                     b.Property<string>("Kategori")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResimYolu")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("StokAdedi")
@@ -252,6 +302,28 @@ namespace GraWat.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("GraWat.Models.Favoriler", b =>
+                {
+                    b.HasOne("GraWat.Models.Urun", "Urun")
+                        .WithMany()
+                        .HasForeignKey("UrunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Urun");
+                });
+
+            modelBuilder.Entity("GraWat.Models.SepetItem", b =>
+                {
+                    b.HasOne("GraWat.Models.Urun", "Urun")
+                        .WithMany()
+                        .HasForeignKey("UrunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Urun");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

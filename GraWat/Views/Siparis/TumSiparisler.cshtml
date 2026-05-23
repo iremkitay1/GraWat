@@ -1,0 +1,118 @@
+﻿@model IEnumerable<GraWat.Models.Siparis>
+
+@{
+    ViewData["Title"] = "Sipariş Yönetimi ve Ciro";
+}
+
+<div class="container mt-5">
+
+    <!-- 💰 İSTATİSTİK VE CİRO KARTLARI -->
+    <div class="row mb-4">
+        <!-- Günlük Ciro Kartı -->
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white shadow-lg border-0 rounded-4 h-100 p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <h6 class="text-uppercase fw-bold text-white-50 mb-2"><i class="bi bi-calendar-day"></i> Günlük Ciro</h6>
+                    <h2 class="mb-0 fw-bold">@ViewBag.GunlukCiro.ToString("C2")</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aylık Ciro Kartı -->
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white shadow-lg border-0 rounded-4 h-100 p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <h6 class="text-uppercase fw-bold text-white-50 mb-2"><i class="bi bi-calendar-month"></i> Bu Ayki Ciro</h6>
+                    <h2 class="mb-0 fw-bold">@ViewBag.AylikCiro.ToString("C2")</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toplam Sipariş Kartı -->
+        <div class="col-md-4 mb-3">
+            <div class="card bg-dark text-warning shadow-lg border-0 rounded-4 h-100 p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <h6 class="text-uppercase fw-bold text-muted mb-2"><i class="bi bi-box-seam"></i> Toplam Sipariş</h6>
+                    <h2 class="mb-0 fw-bold text-warning">@Model.Count() <span class="fs-6 fw-normal text-white">Adet</span></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📋 SİPARİŞ LİSTESİ TABLOSU -->
+    <div class="card shadow border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-dark text-warning py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-list-check me-2"></i> Tüm Sipariş Kayıtları</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-start">
+                <thead class="bg-light border-bottom">
+                    <tr>
+                        <th class="ps-4">No</th>
+                        <th>Müşteri Bilgisi</th>
+                        <th>Tarih</th>
+                        <th>Tutar</th>
+                        <th>Ödeme Yöntemi</th>
+                        <th>Durum</th>
+                        <th class="text-center pe-4">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 text-muted"><strong>#@item.Id</strong></td>
+                            <td><small class="text-dark fw-bold d-block text-truncate" style="max-width: 150px;">@item.KullaniciId</small></td>
+                            <td><small>@item.SiparisTarihi.ToString("dd.MM.yyyy HH:mm")</small></td>
+                            <td class="fw-bold text-success">@item.ToplamTutar.ToString("C2")</td>
+                            <td>
+                                <span class="badge border border-secondary text-dark shadow-sm">
+                                    <i class="bi bi-wallet2 me-1"></i> @item.OdemeYontemi
+                                </span>
+                            </td>
+                            <td>
+                                @if (item.Durum == "Hazırlanıyor")
+                                {
+                                    <span class="badge bg-warning text-dark px-3 rounded-pill">
+                                        <i class="bi bi-clock-history me-1"></i> @item.Durum
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success px-3 rounded-pill">
+                                        <i class="bi bi-check-circle me-1"></i> @item.Durum
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center pe-4">
+                                <a asp-action="SiparisDetay" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-3 px-3 fw-bold shadow-sm">
+                                    Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Kartların üzerine gelince hafif havaya kalkma efekti */
+    .card {
+        transition: transform 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+    /* Tablo Satırı Animasyonu */
+    tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+        tbody tr:hover {
+            background-color: rgba(59, 15, 66, 0.05);
+        }
+</style>

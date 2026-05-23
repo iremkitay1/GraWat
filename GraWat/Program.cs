@@ -4,58 +4,79 @@ using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// --- SERVÝS AYARLARI ---
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
+// Veritabaný Baðlantýlarý
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 builder.Services.AddDbContext<GraWatContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+// DÝKKAT: RequireConfirmedAccount = false yapýldý! (E-posta onayý istemeden giriþ yapýlabilmesi için)
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- HTTP ÝSTEK YAPILANDIRMASI ---
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
 app.MapRazorPages();
 
-// --- ADMÝN ROLÜ VE YETKÝLENDÝRME KODLARI BAÞLANGICI ---
+// --- ADMÝN ROLÜ VE KULLANICI OLUÞTURMA (EN TEMÝZ VE GARANTÝ YOL) ---
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-    // 1. Veritabanýnda "Admin" rolü yoksa, hemen oluþtur
+    // 1. Veritabanýnda "Admin" rolü yoksa oluþtur
     if (!await roleManager.RoleExistsAsync("Admin"))
     {
         await roleManager.CreateAsync(new IdentityRole("Admin"));
     }
 
-    // 2. DÝKKAT: Buraya az önce siteye kayýt olurken kullandýðýnýz mail adresini yazýn!
+    // 2. Admin Maili ve Varsayýlan Þifre
     var adminMail = "admin@gmail.com";
+    var adminSifre = "Admin65+"; // Ýlk giriþ için geçerli þifreniz (Büyük harf, küçük harf, rakam ve iþaret içerir)
 
+    // 3. Veritabanýnda bu mailde biri var mý diye bakýyoruz
     var adminKullanici = await userManager.FindByEmailAsync(adminMail);
 
-    // 3. Eðer kullanýcýyý bulduysa ve henüz Admin deðilse, ona Admin yetkisini ver
-    if (adminKullanici != null && !await userManager.IsInRoleAsync(adminKullanici, "Admin"))
+    // 4. Eðer böyle bir kullanýcý YOKSA, sistemi yormadan direkt KENDÝSÝ OLUÞTURUYOR!
+    if (adminKullanici == null)
+    {
+        adminKullanici = new IdentityUser
+        {
+            UserName = adminMail,
+            Email = adminMail,
+            EmailConfirmed = true
+        };
+        await userManager.CreateAsync(adminKullanici, adminSifre);
+    }
+    else
+    {
+        // Kulllanýcý zaten var ama þifreyi hatýrlamýyorduk, o yüzden Admin65+ olarak güncelliyoruz:
+        var token = await userManager.GeneratePasswordResetTokenAsync(adminKullanici);
+        await userManager.ResetPasswordAsync(adminKullanici, token, adminSifre);
+    }
+
+    // 5. Kullanýcý var (veya yeni oluþturuldu), þimdi ona kesin olarak ADMIN yetkisini ver
+    if (!await userManager.IsInRoleAsync(adminKullanici, "Admin"))
     {
         await userManager.AddToRoleAsync(adminKullanici, "Admin");
     }

@@ -1,92 +1,159 @@
-﻿<form asp-controller="Sepet" asp-action="SiparisOnayla" method="post">
-    <div class="mb-3 text-start">
-        <label class="form-label fw-bold text-dark">Kart Üzerindeki İsim</label>
-        <input type="text"
-               class="form-control"
-               placeholder="Örn: İrem Kıtay"
-               oninput="this.value = this.value.replace(/[0-9]/g, '');"
-               required>
-    </div>
+﻿@model GraWat.Models.Siparis
 
-    <div class="mb-3">
-        <label class="form-label fw-bold text-dark">Kart Numarası</label>
-        <input type="text"
-               id="kartNoInput"
-               class="form-control"
-               placeholder="0000 0000 0000 0000"
-               maxlength="19"
-               required>
-        <small class="text-muted">Lütfen 16 haneli kart numaranızı giriniz.</small>
-    </div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-dark text-white text-center py-3">
+                    <h4 class="mb-0">💳 Ödeme Seçenekleri</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="SiparisOnayla" method="post" id="odemeForm">
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold text-dark">Son Kullanma (AY/YIL)</label>
-            <input type="text"
-                   id="tarihInput"
-                   class="form-control"
-                   placeholder="05/28"
-                   maxlength="5"
-                   required>
-            <small class="text-muted">Örn: 05/28</small>
+                        <div class="payment-options">
+                            <!-- 1. Kredi Kartı Seçeneği -->
+                            <div class="form-check payment-card mb-3 p-3 border rounded-3 shadow-sm" onclick="toggleCardForm(true)">
+                                <input class="form-check-input" type="radio" name="odemeYontemi" id="kart" value="Kredi Kartı" checked>
+                                <label class="form-check-label d-flex align-items-center w-100" for="kart">
+                                    <i class="bi bi-credit-card-2-front fs-3 me-3 text-primary"></i>
+                                    <div>
+                                        <span class="fw-bold d-block">Online Kredi / Banka Kartı</span>
+                                        <small class="text-muted">Güvenli ödeme altyapısı ile şimdi ödeyin.</small>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- AKILLI KART FORMU -->
+                            <div id="cardDetailsForm" class="p-4 border rounded-3 mb-4 bg-light shadow-inner">
+                                <h6 class="mb-3 text-primary"><i class="bi bi-shield-lock-fill"></i> Kart Bilgileri</h6>
+
+                                <div class="mb-3 text-start">
+                                    <label class="form-label small fw-bold text-dark">Kart Üzerindeki İsim</label>
+                                    <input type="text" class="form-control" placeholder="Ad Soyad" maxlength="50">
+                                </div>
+
+                                <div class="mb-3 text-start">
+                                    <label class="form-label small fw-bold text-dark">Kart Numarası</label>
+                                    <input type="text" id="cardNo" class="form-control"
+                                           placeholder="0000 0000 0000 0000"
+                                           maxlength="19"
+                                           oninput="formatCardNumber(this)">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 text-start">
+                                        <label class="form-label small fw-bold text-dark">Son Kullanma (AA/YY)</label>
+                                        <input type="text" id="expiryDate" class="form-control"
+                                               placeholder="MM/YY"
+                                               maxlength="5"
+                                               oninput="formatExpiry(this)">
+                                    </div>
+                                    <div class="col-md-6 mb-3 text-start">
+                                        <label class="form-label small fw-bold text-dark">CVV</label>
+                                        <input type="text" class="form-control"
+                                               placeholder="123"
+                                               maxlength="3"
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    </div>
+                                </div>
+                                <div class="text-muted small text-start">
+                                    <i class="bi bi-lock-fill"></i> 256-bit SSL şifreleme ile korunmaktadır.
+                                </div>
+                            </div>
+
+                            <!-- 2. Kapıda Nakit -->
+                            <div class="form-check payment-card mb-3 p-3 border rounded-3 shadow-sm" onclick="toggleCardForm(false)">
+                                <input class="form-check-input" type="radio" name="odemeYontemi" id="nakit" value="Kapıda Nakit">
+                                <label class="form-check-label d-flex align-items-center w-100" for="nakit">
+                                    <i class="bi bi-cash-stack fs-3 me-3 text-success"></i>
+                                    <div>
+                                        <span class="fw-bold d-block">Kapıda Nakit Ödeme</span>
+                                        <small class="text-muted">Ürününüz kapıya geldiğinde nakit olarak ödeyin.</small>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- 3. Kapıda Kart -->
+                            <div class="form-check payment-card mb-4 p-3 border rounded-3 shadow-sm" onclick="toggleCardForm(false)">
+                                <input class="form-check-input" type="radio" name="odemeYontemi" id="kapidaKart" value="Kapıda Kart">
+                                <label class="form-check-label d-flex align-items-center w-100" for="kapidaKart">
+                                    <i class="bi bi-person-vcard fs-3 me-3 text-info"></i>
+                                    <div>
+                                        <span class="fw-bold d-block">Kapıda Kredi Kartı</span>
+                                        <small class="text-muted">Kuryedeki POS cihazı ile kapıda kartla ödeyin.</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-warning btn-lg px-5 fw-bold shadow">
+                                Siparişi Onayla <i class="bi bi-check-circle-fill ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold text-dark">CVV (Güvenlik Kodu)</label>
-            <input type="text"
-                   class="form-control"
-                   placeholder="123"
-                   maxlength="3"
-                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-                   required>
-        </div>
     </div>
+</div>
 
-    <hr>
-
-    <button type="submit" class="btn btn-warning w-100 fw-bold py-3 shadow-sm" style="border-radius: 10px; font-size: 1.1rem;">
-        Ödemeyi Onayla ve Bitir 🚀
-    </button>
-    <a asp-action="Index" class="btn btn-link w-100 text-muted mt-2 text-decoration-none">Sepete Geri Dön</a>
-</form>
 <script>
-    document.getElementById('tarihInput').addEventListener('input', function (e) {
-        let value = e.target.value.replace(/\D/g, ''); // Sadece rakamları al
+    // Formu açıp kapatan fonksiyon
+    function toggleCardForm(show) {
+        const form = document.getElementById('cardDetailsForm');
+        form.style.display = show ? 'block' : 'none';
+    }
 
-        if (value.length > 2) {
-            // İlk 2 rakamı al + / koy + kalan 2 rakamı al
-            e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
-        } else {
-            e.target.value = value;
-        }
-    });
-        document.getElementById('kartNoInput').addEventListener('input', function (e) {
-        // 1. Rakam olmayan her şeyi temizle
-        let value = e.target.value.replace(/\D/g, '');
-
-        // 2. Maksimum 16 rakam al (Fazlasına izin verme)
-        if (value.length > 16) {
-            value = value.substring(0, 16);
-        }
-
-        // 3. Her 4 rakamda bir boşluk ekle
+    // Kart numarasını 4'lü gruplar halinde ayırır
+    function formatCardNumber(input) {
+        let value = input.value.replace(/\s+/g, '').replace(/[^0-9]/g, '');
         let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        input.value = formattedValue;
+    }
 
-        // 4. Input kutusuna geri yaz
-        e.target.value = formattedValue;
-    });
-
-    // EKSTRA GÜVENLİK: Form gönderilirken 16 hane kontrolü yap
-        document.querySelector('form').addEventListener('submit', function (e) {
-        // Kutuyu bulalım
-        let inputKutusu = document.getElementById('kartNoInput');
-
-        // İçindeki boşlukları silip rakamları sayalım
-        let kartNo = inputKutusu.value.replace(/\s/g, '');
-
-        if (kartNo.length !== 16) {
-            e.preventDefault(); // Sayfanın gitmesini DURDUR
-            alert("Canım kart numaran eksik, lütfen 16 hane olduğundan emin ol! ✨");
-            inputKutusu.focus(); // Kutuyu kırmızı yakalım (odaklanalım)
+    // Tarihe otomatik "/" ekler
+    function formatExpiry(input) {
+        let value = input.value.replace(/[^0-9]/g, '');
+        if (value.length > 2) {
+            input.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        } else {
+            input.value = value;
         }
-    });
+    }
 </script>
+
+<style>
+    .payment-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+        .payment-card:hover {
+            transform: translateY(-2px);
+            border-color: #3b0f42 !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+        }
+
+    #cardDetailsForm {
+        display: block;
+        animation: slideDown 0.4s ease-out;
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-control:focus {
+        border-color: #3b0f42;
+        box-shadow: 0 0 0 0.25rem rgba(59, 15, 66, 0.25);
+    }
+</style>

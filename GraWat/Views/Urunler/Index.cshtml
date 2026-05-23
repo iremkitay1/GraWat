@@ -1,119 +1,58 @@
 ﻿@model IEnumerable<GraWat.Models.Urun>
 
 @{
-    ViewData["Title"] = "Ürünlerimiz";
+    ViewData["Title"] = "Ürün Yönetimi";
 }
 
-<h1 class="text-primary mt-4 mb-4">GraWat Ürün Kataloğu</h1>
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color: #6f42c1;">Ürün ve Stok Yönetimi</h2>
+        <a asp-action="Create" class="btn btn-success btn-lg shadow-sm" style="border-radius: 30px;">
+            ✨ Yeni Ürün Ekle
+        </a>
+    </div>
 
-@if (User.IsInRole("Admin"))
-{
-    <p>
-        <a asp-action="Create" class="btn btn-danger fw-bold">➕ Yeni Ürün Ekle (Admin)</a>
-    </p>
-}
-
-<table class="table table-hover shadow-sm bg-white rounded">
-    <
-    <thead style="background-color: #f8f9fa;">
-        <tr>
-            <th scope="col" class="text-secondary">Ürün Adı</th>
-            <th scope="col" class="text-secondary text-center">Kategori</th>
-            <th scope="col" class="text-secondary text-end">Fiyat</th>
-
-            @* Sadece admin giriş yaptıysa Stok başlığını görsün *@
-            @if (User.Identity.IsAuthenticated && User.Identity.Name == "admin@gmail.com")
-            {
-                <th scope="col" class="text-secondary text-center">Stok Adedi</th>
-            }
-
-            <th scope="col" class="text-secondary text-center">İşlemler</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td class="fw-bold text-dark">@item.Ad</td>
-                <td class="text-center">@item.Kategori</td>
-                <td class="text-end text-success fw-bold">@item.Fiyat ₺</td>
-
-                @* Müşteri giriş yaptığında burası boş kalacak (gizlenecek) *@
-                @if (User.Identity.IsAuthenticated && User.Identity.Name == "admin@gmail.com")
-                {
-                    <td class="text-center">@item.StokAdedi</td>
-                }
-
-                <td class="text-center" style="vertical-align: middle; padding: 5px !important;">
-                    @if (User.Identity.IsAuthenticated && User.Identity.Name == "admin@gmail.com")
+    <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 text-center align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-start ps-4">Ürün Adı</th>
+                        <th>Kategori</th>
+                        <th>Fiyat</th>
+                        <th>Stok Durumu</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
                     {
-                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Silmek istediğinize emin misiniz?');"
-                              style="display: inline !important; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important;">
-
-                            <button type="submit" class="btn btn-danger btn-sm"
-                                    style="padding: 2px 6px !important; font-size: 11px !important; line-height: 1;">
-                                <i class="bi bi-trash3-fill"></i> Sil
-                            </button>
-                        </form>
+                        <tr>
+                            <td class="fw-bold text-start ps-4">@item.Ad</td>
+                            <td><span class="badge bg-secondary px-3 py-2 rounded-pill">@item.Kategori</span></td>
+                            <td class="text-success fw-bold">@item.Fiyat.ToString("C")</td>
+                            <td>
+                                @if (item.StokAdedi > 20)
+                                {
+                                    <span class="badge bg-success px-3 py-2 rounded-pill">Yüksek (@item.StokAdedi)</span>
+                                }
+                                else if (item.StokAdedi > 0)
+                                {
+                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Kritik (@item.StokAdedi)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger px-3 py-2 rounded-pill">Tükendi (0)</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary fw-bold">Stok/Düzenle</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger fw-bold">Sil</a>
+                            </td>
+                        </tr>
                     }
-                    else
-                    {
-                        <button type="button" class="btn btn-success btn-sm sepet-ekle-btn" data-id="@item.Id"
-                                style="padding: 2px 6px !important; font-size: 11px !important; line-height: 1;">
-                            <i class="bi bi-cart-plus"></i> Ekle
-                        </button>
-                    }
-                </td>
-
-                <td>
-                    @if (!string.IsNullOrEmpty(item.ResimYolu))
-                    {
-                        <img src="~/img/@item.ResimYolu" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border: 1px solid #ddd;" />
-                    }
-                    else
-                    {
-                        <img src="~/img/no-image.jpg" style="width:60px; height:60px; border-radius:8px;" />
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-@section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $(".sepet-ekle-btn").click(function (e) {
-                e.preventDefault(); // Sayfanın zıplamasını veya yenilenmesini engeller
-
-                var urunId = $(this).data("id");
-                var buton = $(this);
-
-                $.ajax({
-                    url: '/Sepet/Ekle/' + urunId,
-                    type: 'POST',
-                    success: function () {
-                        // 1. Üst menüdeki sepet rakamını güncelle
-                        var badge = $(".badge");
-                        var mevcutSayi = parseInt(badge.text()) || 0;
-                        badge.text(mevcutSayi + 1);
-
-                        // 2. Buton üzerinde anlık görsel efekt
-                        var eskiIcerik = buton.html();
-                        buton.html('<i class="bi bi-check-lg"></i> Eklendi!');
-                        buton.removeClass("btn-success").addClass("btn-warning");
-
-                        setTimeout(function () {
-                            buton.html(eskiIcerik);
-                            buton.removeClass("btn-warning").addClass("btn-success");
-                        }, 1500);
-                    },
-                    error: function () {
-                        // Eğer giriş yapılmadıysa direkt Login sayfasına uçur
-                        window.location.href = '/Identity/Account/Login';
-                    }
-                });
-            });
-        });
-    </script>
-}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

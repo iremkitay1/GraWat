@@ -1,5 +1,9 @@
-﻿namespace GraWat.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace GraWat.Models
 {
+    [Table("Urunler")]
     public class Urun
     {
         public int Id { get; set; } // Veritabanında her ürünün benzersiz kimliği

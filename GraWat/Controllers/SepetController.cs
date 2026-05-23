@@ -3,21 +3,25 @@ using Microsoft.EntityFrameworkCore;
 using GraWat.Data;
 using GraWat.Models;
 using System.Security.Claims;
-using GraWat.Controllers;
+using System.Threading.Tasks;
+using System.Linq;
+using System;
 
 namespace GraWat.Controllers
 {
     public class SepetController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context; // Sepet işlemleri için
+        private readonly GraWatContext _grawatContext;  // Sipariş kaydı için
 
-        public SepetController(ApplicationDbContext context)
+        public SepetController(ApplicationDbContext context, GraWatContext grawatContext)
         {
             _context = context;
+            _grawatContext = grawatContext;
         }
 
-        // SEPETİM SAYFASI: Sepettekileri listeler
-        public async Task<IActionResult> Index()
+        // SEPETİM SAYFASI: Sepettekileri listeler
+        public async Task<IActionResult> Index()
         {
             var kullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var sepet = await _context.SepetItems
@@ -27,22 +31,20 @@ namespace GraWat.Controllers
             return View(sepet);
         }
 
-        // SEPETE EKLEME FONKSİYONU
-        public async Task<IActionResult> Ekle(int id)
+        // SEPETE EKLEME FONKSİYONU
+        public async Task<IActionResult> Ekle(int id)
         {
             var kullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // 1. GİRİŞ KONTROLÜ (AJAX DOSTU)
             if (string.IsNullOrEmpty(kullaniciId))
             {
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    return Unauthorized(); // JS bunu yakalayıp Login'e atacak
+                    return Unauthorized();
                 }
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
-            // 2. SEPETE EKLEME MANTIĞI (Mevcut kodun)
             var sepetItem = await _context.SepetItems
                 .FirstOrDefaultAsync(s => s.UrunId == id && s.KullaniciId == kullaniciId);
 
@@ -57,30 +59,28 @@ namespace GraWat.Controllers
 
             await _context.SaveChangesAsync();
 
-            // 3. YANIT KISMI
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                return Ok(); // Sayfayı yenileme, sadece "İşlem Tamam" de
+                return Ok();
             }
 
             return RedirectToAction("Index", "Home");
         }
-        // SEPETTEN ÜRÜN SİLME FONKSİYONU
-        public async Task<IActionResult> Sil(int id)
-        {
-            // Veritabanından o sepet satırını bul
-            var sepetItem = await _context.SepetItems.FindAsync(id);
 
+        // SEPETTEN ÜRÜN SİLME
+        public async Task<IActionResult> Sil(int id)
+        {
+            var sepetItem = await _context.SepetItems.FindAsync(id);
             if (sepetItem != null)
             {
                 _context.SepetItems.Remove(sepetItem);
-                await _context.SaveChangesAsync(); // Değişikliği SQL'e kaydet
-            }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
-            return RedirectToAction(nameof(Index)); // Tekrar sepet sayfasına dön
-        }
-        // ADET ARTIRMA (+)
-        public async Task<IActionResult> Artir(int id)
+        // ADET ARTIRMA (+)
+        public async Task<IActionResult> Artir(int id)
         {
             var sepetItem = await _context.SepetItems.FindAsync(id);
             if (sepetItem != null)
@@ -91,8 +91,8 @@ namespace GraWat.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ADET AZALTMA (-)
-        public async Task<IActionResult> Azalt(int id)
+        // ADET AZALTMA (-)
+        public async Task<IActionResult> Azalt(int id)
         {
             var sepetItem = await _context.SepetItems.FindAsync(id);
             if (sepetItem != null)
@@ -103,39 +103,80 @@ namespace GraWat.Controllers
                 }
                 else
                 {
-                    // Eğer adet 1 ise ve tekrar eksiye basılırsa ürünü tamamen silsin
-                    _context.SepetItems.Remove(sepetItem);
+                    _context.SepetItems.Remove(sepetItem);
                 }
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // ÖDEME SAYFASI
+        // ÖDEME SEÇENEKLERİ SAYFASI
         public IActionResult Odeme()
         {
-            // Sepette ürün var mı kontrolü (İsteğe bağlı)
             return View();
         }
 
+        // SİPARİŞİ ONAYLAMA (Eksiksiz Ürün Detay Kaydeden Versiyon 🚀)
         [HttpPost]
-        public async Task<IActionResult> SiparisOnayla()
+        public async Task<IActionResult> SiparisOnayla(string odemeYontemi)
         {
-            // 1. İşlem: Kullanıcının kim olduğunu bul
             var kullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // 2. İşlem: Bu kullanıcının sepetindeki her şeyi bul
-            var kullaniciSepeti = _context.SepetItems.Where(s => s.KullaniciId == kullaniciId);
+            // 1. Sepeti fiyatlarla birlikte çekiyoruz
+            var kullaniciSepeti = await _context.SepetItems
+                .Include(s => s.Urun)
+                .Where(s => s.KullaniciId == kullaniciId)
+                .ToListAsync();
 
-            // 3. İşlem: Sepeti veritabanından tamamen sil (Sepet 0'a düşsün)
+            if (!kullaniciSepeti.Any())
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 2. Toplam tutarı hesaplıyoruz
+            decimal gercekToplamTutar = kullaniciSepeti.Sum(item => item.Adet * item.Urun.Fiyat);
+
+            // 3. Yeni Siparişi Oluşturuyoruz
+            var yeniSiparis = new GraWat.Models.Siparis
+            {
+                KullaniciId = kullaniciId,
+                SiparisTarihi = DateTime.Now,
+                ToplamTutar = gercekToplamTutar,
+                Durum = "Hazırlanıyor",
+                OdemeYontemi = odemeYontemi ?? "Kredi Kartı"
+            };
+
+            // 4. Önce Ana Siparişi Kaydediyoruz (Böylece veritabanı otomatik bir Siparis.Id üretecek)
+            _grawatContext.Siparisler.Add(yeniSiparis);
+            await _grawatContext.SaveChangesAsync();
+
+            // =================================================================
+            // 🚀 EKSİK OLAN KISIM BURASIYDI: Sipariş Kalemlerini Tek Tek Kaydediyoruz
+            // =================================================================
+            foreach (var sepetUrunu in kullaniciSepeti)
+            {
+                var yeniKalem = new SiparisKalemi
+                {
+                    SiparisId = yeniSiparis.Id, // Üstte oluşan siparişin ID'sini bağlıyoruz
+                    UrunId = sepetUrunu.UrunId,
+                    Adet = sepetUrunu.Adet,
+                    Fiyat = sepetUrunu.Urun.Fiyat
+                };
+
+                _grawatContext.SiparisKalemleri.Add(yeniKalem);
+            }
+
+            // Tüm ürün kalemlerini veritabanına topluca kaydediyoruz
+            await _grawatContext.SaveChangesAsync();
+            // =================================================================
+
+            // 5. Sepeti ApplicationDbContext (SepetItems Tablosu) üzerinden temizliyoruz
             _context.SepetItems.RemoveRange(kullaniciSepeti);
             await _context.SaveChangesAsync();
 
-            // 4. İşlem: Seni yeni hazırlayacağımız şık sayfaya gönder
             return RedirectToAction(nameof(SiparisBasarili));
         }
 
-        // Bu da yeni sayfamızı açacak olan kapı
         public IActionResult SiparisBasarili()
         {
             return View();
