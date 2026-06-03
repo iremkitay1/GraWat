@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GraWat.Migrations.ApplicationDb
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260518221047_InitialIdentity")]
+    [Migration("20260603100137_InitialIdentity")]
     partial class InitialIdentity
     {
         /// <inheritdoc />

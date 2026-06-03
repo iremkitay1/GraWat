@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GraWat.Migrations.ApplicationDb
 {
     /// <inheritdoc />
-    public partial class Guvenlik : Migration
+    public partial class InitialIdentity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,7 +50,7 @@ namespace GraWat.Migrations.ApplicationDb
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 });
 
-           /* migrationBuilder.CreateTable(
+            /* migrationBuilder.CreateTable(
                 name: "Urunler",
                 columns: table => new
                 {
@@ -65,7 +65,7 @@ namespace GraWat.Migrations.ApplicationDb
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Urunler", x => x.Id);
-                });*/
+                }); */
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
@@ -173,6 +173,26 @@ namespace GraWat.Migrations.ApplicationDb
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            /* migrationBuilder.CreateTable(
+                name: "Favoriler",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UrunId = table.Column<int>(type: "int", nullable: false),
+                    KullaniciId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Favoriler", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Favoriler_Urunler_UrunId",
+                        column: x => x.UrunId,
+                        principalTable: "Urunler",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                }); */
+
             migrationBuilder.CreateTable(
                 name: "SepetItems",
                 columns: table => new
@@ -233,6 +253,11 @@ namespace GraWat.Migrations.ApplicationDb
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
 
+            /* migrationBuilder.CreateIndex(
+                name: "IX_Favoriler_UrunId",
+                table: "Favoriler",
+                column: "UrunId"); */
+
             migrationBuilder.CreateIndex(
                 name: "IX_SepetItems_UrunId",
                 table: "SepetItems",
@@ -257,6 +282,9 @@ namespace GraWat.Migrations.ApplicationDb
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
 
+            /* migrationBuilder.DropTable(
+                name: "Favoriler"); */
+
             migrationBuilder.DropTable(
                 name: "SepetItems");
 
@@ -266,8 +294,8 @@ namespace GraWat.Migrations.ApplicationDb
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
-            migrationBuilder.DropTable(
-                name: "Urunler");
+            /* migrationBuilder.DropTable(
+                name: "Urunler"); */
         }
     }
 }

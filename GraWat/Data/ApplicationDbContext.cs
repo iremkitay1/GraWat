@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using GraWat.Models;
 
@@ -13,5 +13,10 @@ namespace GraWat.Data
 
         public DbSet<SepetItem> SepetItems { get; set; }
         public DbSet<Favoriler> Favoriler { get; set; } // Yeni favoriler tablomuz
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

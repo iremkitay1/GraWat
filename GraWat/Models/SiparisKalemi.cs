@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GraWat.Models
 {
+    [Table("SiparisKalemleri")]
     public class SiparisKalemi
     {
         public int Id { get; set; }

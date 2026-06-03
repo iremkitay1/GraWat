@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using GraWat.Models;
 
 namespace GraWat.Data
@@ -12,5 +12,10 @@ namespace GraWat.Data
         public DbSet<Siparis> Siparisler { get; set; }
         public DbSet<SiparisKalemi> SiparisKalemleri { get; set; }
         public DbSet<Favoriler> Favoriler { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GraWat.Models
 {
+    [Table("Yorumlar")]
     public class Yorum
     {
         public int Id { get; set; }

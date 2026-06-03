@@ -1,4 +1,4 @@
-﻿@model IEnumerable<GraWat.Models.Urun>
+@model IEnumerable<GraWat.Models.Urun>
 
 @{
     ViewData["Title"] = "Favorilerim";
@@ -77,9 +77,9 @@
 
                                     <div class="card-footer bg-white border-0 text-center pb-3 pt-2">
                                         <div class="d-grid gap-2">
-                                            <a asp-controller="Sepet" asp-action="Ekle" asp-route-id="@urun.Id" class="btn btn-sm btn-outline-dark rounded-pill fw-bold">
+                                            <button type="button" class="btn btn-sm btn-outline-dark rounded-pill fw-bold sepete-ekle-btn" data-id="@urun.Id">
                                                 <i class="bi bi-cart-plus"></i> Sepete Ekle
-                                            </a>
+                                            </button>
                                             <a asp-controller="Profil" asp-action="FavoriIslemi" asp-route-id="@urun.Id" class="btn btn-sm btn-danger text-white rounded-pill fw-bold">
                                                 ❌ Kaldır
                                             </a>
