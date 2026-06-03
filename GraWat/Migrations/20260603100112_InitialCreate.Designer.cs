@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GraWat.Migrations
 {
     [DbContext(typeof(GraWatContext))]
-    [Migration("20260518220650_InitialCreate")]
+    [Migration("20260603100112_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,6 +24,28 @@ namespace GraWat.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("GraWat.Models.Favoriler", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("KullaniciId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UrunId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UrunId");
+
+                    b.ToTable("Favoriler");
+                });
 
             modelBuilder.Entity("GraWat.Models.Siparis", b =>
                 {
@@ -149,10 +171,21 @@ namespace GraWat.Migrations
                     b.ToTable("Yorumlar");
                 });
 
+            modelBuilder.Entity("GraWat.Models.Favoriler", b =>
+                {
+                    b.HasOne("GraWat.Models.Urun", "Urun")
+                        .WithMany()
+                        .HasForeignKey("UrunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Urun");
+                });
+
             modelBuilder.Entity("GraWat.Models.SiparisKalemi", b =>
                 {
                     b.HasOne("GraWat.Models.Siparis", "Siparis")
-                        .WithMany()
+                        .WithMany("SiparisKalemleri")
                         .HasForeignKey("SiparisId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -166,6 +199,11 @@ namespace GraWat.Migrations
                     b.Navigation("Siparis");
 
                     b.Navigation("Urun");
+                });
+
+            modelBuilder.Entity("GraWat.Models.Siparis", b =>
+                {
+                    b.Navigation("SiparisKalemleri");
                 });
 #pragma warning restore 612, 618
         }

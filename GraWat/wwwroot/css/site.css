@@ -20,3 +20,8 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* SweetAlert2 Toast'u sabit navbar'in altina kaydirmak icin */
+.navbar-under-toast {
+  margin-top: 75px !important;
+}

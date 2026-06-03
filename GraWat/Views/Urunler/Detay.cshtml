@@ -1,4 +1,4 @@
-﻿@model GraWat.Models.Urun
+@model GraWat.Models.Urun
 
 @{
     ViewData["Title"] = Model.Ad + " - GraWat Kozmetik";
@@ -19,9 +19,9 @@
             <p class="text-muted lh-base">@Model.Kategori</p>
 
             <div class="d-grid gap-2 mt-5">
-                <a href="#" class="btn btn-warning btn-lg rounded-pill fw-bold text-dark shadow">
+                <button type="button" class="btn btn-warning btn-lg rounded-pill fw-bold text-dark shadow sepete-ekle-btn" data-id="@Model.Id">
                     Sepete Ekle <i class="bi bi-cart-plus ms-2"></i>
-                </a>
+                </button>
             </div>
         </div>
     </div>

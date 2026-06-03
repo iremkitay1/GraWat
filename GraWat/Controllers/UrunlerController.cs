@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using GraWat.Data;
 using Microsoft.AspNetCore.Authorization;
 using GraWat.Models;
@@ -19,26 +19,6 @@ namespace GraWat.Controllers
 
         // --- 🛍️ MÜŞTERİ SAYFALARI (HERKES GİREBİLİR) ---
 
-        public IActionResult Index(int? siparisId)
-        {
-            if (siparisId != null)
-            {
-                var urunIdleri = _context.SiparisKalemleri
-                                        .Where(sk => sk.SiparisId == siparisId)
-                                        .Select(sk => sk.UrunId)
-                                        .ToList();
-
-                var filtrelenmişUrunler = _context.Urunler
-                                                .Where(u => urunIdleri.Contains(u.Id))
-                                                .ToList();
-
-                return View(filtrelenmişUrunler);
-            }
-
-            var tumUrunler = _context.Urunler.ToList();
-            return View(tumUrunler);
-        }
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -51,7 +31,7 @@ namespace GraWat.Controllers
                 .OrderByDescending(x => x.Tarih)
                 .ToList();
 
-            return View(urun);
+            return View("Detay", urun);
         }
 
         [HttpPost]
@@ -80,6 +60,27 @@ namespace GraWat.Controllers
 
         // --- 👑 ADMİN PANELİ İŞLEMLERİ (KİLİTLİ ALANLAR) ---
         // Aşağıdaki tüm işlemler sadece Adminlere özeldir!
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Index(int? siparisId)
+        {
+            if (siparisId != null)
+            {
+                var urunIdleri = _context.SiparisKalemleri
+                                        .Where(sk => sk.SiparisId == siparisId)
+                                        .Select(sk => sk.UrunId)
+                                        .ToList();
+
+                var filtrelenmişUrunler = _context.Urunler
+                                                .Where(u => urunIdleri.Contains(u.Id))
+                                                .ToList();
+
+                return View(filtrelenmişUrunler);
+            }
+
+            var tumUrunler = _context.Urunler.ToList();
+            return View(tumUrunler);
+        }
 
         [Authorize(Roles = "Admin")]
         public IActionResult Create() => View();

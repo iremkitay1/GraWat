@@ -22,6 +22,28 @@ namespace GraWat.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GraWat.Models.Favoriler", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("KullaniciId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UrunId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UrunId");
+
+                    b.ToTable("Favoriler");
+                });
+
             modelBuilder.Entity("GraWat.Models.Siparis", b =>
                 {
                     b.Property<int>("Id")
@@ -146,10 +168,21 @@ namespace GraWat.Migrations
                     b.ToTable("Yorumlar");
                 });
 
+            modelBuilder.Entity("GraWat.Models.Favoriler", b =>
+                {
+                    b.HasOne("GraWat.Models.Urun", "Urun")
+                        .WithMany()
+                        .HasForeignKey("UrunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Urun");
+                });
+
             modelBuilder.Entity("GraWat.Models.SiparisKalemi", b =>
                 {
                     b.HasOne("GraWat.Models.Siparis", "Siparis")
-                        .WithMany()
+                        .WithMany("SiparisKalemleri")
                         .HasForeignKey("SiparisId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -163,6 +196,11 @@ namespace GraWat.Migrations
                     b.Navigation("Siparis");
 
                     b.Navigation("Urun");
+                });
+
+            modelBuilder.Entity("GraWat.Models.Siparis", b =>
+                {
+                    b.Navigation("SiparisKalemleri");
                 });
 #pragma warning restore 612, 618
         }

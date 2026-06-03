@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GraWat.Data;
 using GraWat.Models;
@@ -40,7 +40,7 @@ namespace GraWat.Controllers
             {
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    return Unauthorized();
+                    return Json(new { success = false, message = "Sepete ürün eklemek için lütfen giriş yapınız.", redirectUrl = "/Identity/Account/Login" });
                 }
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
@@ -59,9 +59,13 @@ namespace GraWat.Controllers
 
             await _context.SaveChangesAsync();
 
+            var yeniSepetAdedi = await _context.SepetItems
+                .Where(s => s.KullaniciId == kullaniciId)
+                .SumAsync(s => s.Adet);
+
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                return Ok();
+                return Json(new { success = true, message = "Ürün sepete eklendi!", cartCount = yeniSepetAdedi });
             }
 
             return RedirectToAction("Index", "Home");

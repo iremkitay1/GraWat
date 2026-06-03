@@ -1,5 +1,8 @@
-﻿namespace GraWat.Models
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace GraWat.Models
 {
+    [Table("Favoriler")]
     public class Favoriler
     {
         public int Id { get; set; }

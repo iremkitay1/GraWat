@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GraWat.Migrations
 {
     /// <inheritdoc />
-    public partial class Kurulum : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -64,6 +64,26 @@ namespace GraWat.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Favoriler",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UrunId = table.Column<int>(type: "int", nullable: false),
+                    KullaniciId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Favoriler", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Favoriler_Urunler_UrunId",
+                        column: x => x.UrunId,
+                        principalTable: "Urunler",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SiparisKalemleri",
                 columns: table => new
                 {
@@ -92,6 +112,11 @@ namespace GraWat.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Favoriler_UrunId",
+                table: "Favoriler",
+                column: "UrunId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SiparisKalemleri_SiparisId",
                 table: "SiparisKalemleri",
                 column: "SiparisId");
@@ -105,6 +130,9 @@ namespace GraWat.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Favoriler");
+
             migrationBuilder.DropTable(
                 name: "SiparisKalemleri");
 
