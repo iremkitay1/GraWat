@@ -90,6 +90,46 @@
                             </div>
                         }
                     </div>
+
+                    <!-- Sayfalama (Pagination) -->
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        <nav aria-label="Sayfalama" class="mt-5">
+                            <ul class="pagination justify-content-center">
+                                @* Önceki Butonu *@
+                                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link shadow-none" asp-controller="Profil" asp-action="Favorilerim" 
+                                       asp-route-page="@(ViewBag.CurrentPage - 1)" 
+                                       asp-route-favoriArama="@ViewBag.FavoriAramaKelimesi" 
+                                       style="border-radius: 20px 0 0 20px;">
+                                        <i class="bi bi-chevron-left"></i> Önceki
+                                    </a>
+                                </li>
+
+                                @* Sayfa Numaraları *@
+                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                                        <a class="page-link shadow-none" asp-controller="Profil" asp-action="Favorilerim" 
+                                           asp-route-page="@i" 
+                                           asp-route-favoriArama="@ViewBag.FavoriAramaKelimesi">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                @* Sonraki Butonu *@
+                                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                                    <a class="page-link shadow-none" asp-controller="Profil" asp-action="Favorilerim" 
+                                       asp-route-page="@(ViewBag.CurrentPage + 1)" 
+                                       asp-route-favoriArama="@ViewBag.FavoriAramaKelimesi"
+                                       style="border-radius: 0 20px 20px 0;">
+                                        Sonraki <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
                 }
                 else
                 {
@@ -115,4 +155,29 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
         }
+
+    /* Sayfalama (Pagination) Tasarımı */
+    .pagination .page-link {
+        color: #5c1866;
+        border-color: #dee2e6;
+        padding: 8px 16px;
+        transition: all 0.2s ease;
+    }
+    .pagination .page-link:hover {
+        background-color: #fcefe9;
+        color: #5c1866;
+        border-color: #dee2e6;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #5c1866;
+        border-color: #5c1866;
+        color: #ffffff;
+        font-weight: bold;
+    }
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+        opacity: 0.6;
+    }
 </style>

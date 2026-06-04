@@ -1,4 +1,4 @@
-﻿@{
+@{
     if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
     {
         Layout = parentLayout.ToString();
@@ -10,9 +10,42 @@
 }
 
 <div class="container mt-5 mb-5 pt-4">
+    <style>
+        .info-alert-banner {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .info-alert-banner:hover {
+            background: rgba(255, 255, 255, 0.18) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+        }
+        .info-alert-icon-wrapper {
+            background: rgba(255, 204, 0, 0.15) !important;
+            border: 1px solid rgba(255, 204, 0, 0.4) !important;
+            color: #ffc107 !important;
+            transition: transform 0.3s ease;
+        }
+        .info-alert-banner:hover .info-alert-icon-wrapper {
+            transform: scale(1.1);
+        }
+    </style>
+
     <div class="row text-center mb-4">
         <h2 class="fw-bold text-dark"><i class="bi bi-gear-wide-connected text-warning me-2"></i> Hesap Yönetim Paneli</h2>
-        <p class="text-muted">GraWat hesabınızla ilgili tüm ayarları buradan güvenle yönetebilirsiniz.</p>
+        <div class="d-flex justify-content-center mt-2">
+            <div class="info-alert-banner d-inline-flex align-items-center gap-3 px-4 py-3 rounded-4 shadow-sm border" style="max-width: 620px;">
+                <div class="info-alert-icon-wrapper d-flex align-items-center justify-content-center rounded-circle" style="width: 42px; height: 42px; flex-shrink: 0;">
+                    <i class="bi bi-shield-check fs-4"></i>
+                </div>
+                <p class="mb-0 text-start text-white fw-medium" style="font-size: 0.95rem; line-height: 1.5;">
+                    GraWat hesabınızla ilgili tüm ayarları buradan güvenle yönetebilirsiniz.
+                </p>
+            </div>
+        </div>
     </div>
 
     <div class="row g-4">
