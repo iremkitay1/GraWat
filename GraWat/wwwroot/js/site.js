@@ -114,3 +114,95 @@ $(document).on("click", ".sepete-ekle-btn", function (e) {
         }
     });
 });
+
+// Global AJAX "Toggle Favorite" Handler using Fetch API and SweetAlert2
+$(document).on("click", ".favori-toggle-btn", function (e) {
+    e.preventDefault();
+    var button = $(this);
+    var urunId = button.data("id");
+    var icon = button.find("i");
+
+    // Disable button to prevent double-click issues
+    button.prop("disabled", true);
+
+    fetch("/Profil/ToggleFavorite/" + urunId, {
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("HTTP status " + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        button.prop("disabled", false);
+        if (data.success) {
+            // Update icon style
+            if (data.isAdded) {
+                icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");
+            } else {
+                icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");
+            }
+
+            // Update badge count
+            $("#favori-badge").text(data.favoritesCount);
+
+            // Play SweetAlert2 Toast success message
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'navbar-under-toast'
+                },
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: data.message
+            });
+        } else {
+            // If redirect is needed (not logged in)
+            if (data.redirectUrl) {
+                Swal.fire({
+                    title: 'Giriş Gerekli',
+                    text: data.message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3b0f42',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Giriş Yap',
+                    cancelButtonText: 'İptal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = data.redirectUrl;
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hata',
+                    text: data.message
+                });
+            }
+        }
+    })
+    .catch(error => {
+        button.prop("disabled", false);
+        console.error("Favori işlemi hatası:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Sistem Hatası',
+            text: 'İşlem gerçekleştirilemedi.'
+        });
+    });
+});

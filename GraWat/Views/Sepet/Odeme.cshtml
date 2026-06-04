@@ -1,4 +1,4 @@
-﻿@model GraWat.Models.Siparis
+@model GraWat.Models.Siparis
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -121,6 +121,66 @@
             input.value = value;
         }
     }
+
+    // AJAX ile Sipariş Formu Yönetimi
+    document.getElementById('odemeForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+
+        // Şık Yükleme Göstergesi (SweetAlert2)
+        Swal.fire({
+            title: 'Siparişiniz İşleniyor...',
+            text: 'Lütfen bekleyiniz.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Şık Başarı Animasyonu
+                Swal.fire({
+                    title: 'Siparişiniz Başarıyla Alındı!',
+                    text: 'Siparişlerim sayfasına yönlendiriliyorsunuz...',
+                    icon: 'success',
+                    timer: 2500,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    allowOutsideClick: false
+                }).then(() => {
+                    // Zamanlamalı Yönlendirme (Redirect)
+                    window.location.href = '/Siparis/Siparislerim';
+                });
+            } else {
+                Swal.fire({
+                    title: 'Hata!',
+                    text: data.message || 'Sipariş onaylanırken bir hata oluştu.',
+                    icon: 'error',
+                    confirmButtonText: 'Tamam'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Hata!',
+                text: 'Sunucu ile bağlantı kurulamadı. Lütfen tekrar deneyin.',
+                icon: 'error',
+                confirmButtonText: 'Tamam'
+            });
+        });
+    });
 </script>
 
 <style>

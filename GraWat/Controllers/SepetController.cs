@@ -134,7 +134,7 @@ namespace GraWat.Controllers
 
             if (!kullaniciSepeti.Any())
             {
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Sepetiniz boş!" });
             }
 
             // 2. Toplam tutarı hesaplıyoruz
@@ -178,7 +178,7 @@ namespace GraWat.Controllers
             _context.SepetItems.RemoveRange(kullaniciSepeti);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(SiparisBasarili));
+            return Json(new { success = true, message = "Siparişiniz başarıyla alındı!" });
         }
 
         public IActionResult SiparisBasarili()
