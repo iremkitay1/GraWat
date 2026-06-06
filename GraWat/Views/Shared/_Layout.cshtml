@@ -1,4 +1,4 @@
-@using System.Security.Claims
+﻿﻿@using System.Security.Claims
 @using GraWat.Data
 @inject ApplicationDbContext _context
 @inject GraWatContext _grawatContext
@@ -37,77 +37,56 @@
         }
 
         .main-layout-wrapper {
-            margin-top: 116px !important;
+            margin-top: 118px !important;
             background-color: #8c2c9c !important;
             color: white;
-            min-height: calc(100vh - 116px);
+            min-height: calc(100vh - 118px);
             padding: 40px 0;
         }
 
-        /* SUB-NAVBAR (Kategori Çubuğu) */
+        /* SUB-NAVBAR STİLLERİ */
         .sub-navbar {
-            background-color: #f8f9fa !important;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
             position: fixed !important;
             top: 70px !important;
             left: 0 !important;
             right: 0 !important;
-            width: 100% !important;
-            z-index: 99998 !important;
-            height: 46px !important;
-            display: flex !important;
-            align-items: center !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .sub-nav-container {
-            display: flex !important;
-            flex-wrap: nowrap !important;
+            height: 48px !important;
+            background-color: #4a1252 !important;
+            z-index: 9999 !important;
+            border-bottom: 2px solid #FFCC00 !important;
             overflow-x: auto !important;
-            width: 100%;
             white-space: nowrap !important;
-            padding: 0 10px;
-            scroll-behavior: smooth;
+            scrollbar-width: none !important; /* Firefox */
+            -ms-overflow-style: none !important;  /* IE/Edge */
         }
-
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        .sub-nav-container::-webkit-scrollbar {
-            display: none !important;
-        }
-
-        /* Hide scrollbar for IE, Edge and Firefox */
-        .sub-nav-container {
-            -ms-overflow-style: none !important;  /* IE and Edge */
-            scrollbar-width: none !important;  /* Firefox */
-        }
-
-        .sub-nav-item {
-            display: inline-flex !important;
-            align-items: center !important;
-            padding: 0 16px !important;
-            position: relative;
-        }
-
-        .sub-nav-item:not(:last-child)::after {
-            content: "";
-            position: absolute;
-            right: 0;
-            top: 14px;
-            height: 18px;
-            width: 1px;
-            background-color: rgba(0, 0, 0, 0.06);
+        
+        .sub-navbar::-webkit-scrollbar {
+            display: none !important; /* Chrome/Safari */
         }
 
         .sub-nav-link {
-            color: #495057 !important; /* Koyu gri doğal metin rengi */
-            font-weight: 500 !important; /* Medium/Normal kalınlık */
+            color: rgba(255, 255, 255, 0.9) !important;
             text-decoration: none !important;
-            font-size: 0.9rem; /* Daha zarif küçük boyut */
-            transition: color 0.2s ease;
+            font-weight: bold !important;
+            font-size: 0.9rem !important;
+            padding: 8px 12px !important;
+            transition: all 0.2s ease !important;
+            display: inline-block !important;
         }
 
         .sub-nav-link:hover {
-            color: #3b0f42 !important; /* Projenin ana marka koyu mor rengi */
+            color: #FFCC00 !important;
+            text-shadow: 0px 0px 8px #FFCC00 !important;
+        }
+
+        .sub-nav-divider {
+            width: 1px !important;
+            height: 16px !important;
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            margin: 0 4px !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+            flex-shrink: 0 !important;
         }
 
         .nav-link, .navbar-brand {
@@ -295,33 +274,25 @@
                 </div>
             </div>
         </nav>
-
-        <!-- KATEGORİ ÇUBUĞU (Sub-navbar) -->
+        
+        <!-- KATEGORİ SUB-NAVBAR -->
         <div class="sub-navbar">
-            <div class="container d-flex justify-content-center">
-                <div class="sub-nav-container">
-                    <div class="sub-nav-item">
-                        <a href="/Home/Index?kategori=Makyaj" class="sub-nav-link">Makyaj</a>
-                    </div>
-                    <div class="sub-nav-item">
-                        <a href="/Home/Index?kategori=Cilt Bakım" class="sub-nav-link">Cilt Bakımı</a>
-                    </div>
-                    <div class="sub-nav-item">
-                        <a href="/Home/Index?kategori=Saç Bakım" class="sub-nav-link">Saç Bakımı</a>
-                    </div>
-                    <div class="sub-nav-item">
-                        <a href="/Home/Index?kategori=Parfüm/Deodorant" class="sub-nav-link">Parfüm & Deodorant</a>
-                    </div>
-                    <div class="sub-nav-item">
-                        <a href="/Home/Index?kategori=Erkek Bakım" class="sub-nav-link">Erkek Bakımı</a>
-                    </div>
-                    <div class="sub-nav-item">
-                        <a href="/Home/Index?kategori=Kişisel Bakım" class="sub-nav-link">Kişisel Bakım</a>
-                    </div>
-                    <div class="sub-nav-item">
-                        <a href="/Home/Index?kategori=Anne & Bebek" class="sub-nav-link">Anne & Bebek</a>
-                    </div>
-                </div>
+            <div class="container d-flex align-items-center justify-content-start justify-content-md-center h-100">
+                <a href="/Home/Index?kategori=Makyaj" class="sub-nav-link">Makyaj</a>
+                <span class="sub-nav-divider"></span>
+                <a href="/Home/Index?kategori=Cilt Bakım" class="sub-nav-link">Cilt Bakım</a>
+                <span class="sub-nav-divider"></span>
+                <a href="/Home/Index?kategori=Saç Bakım" class="sub-nav-link">Saç Bakım</a>
+                <span class="sub-nav-divider"></span>
+                <a href="/Home/Index?kategori=Parfüm/Deodorant" class="sub-nav-link">Parfüm & Deodorant</a>
+                <span class="sub-nav-divider"></span>
+                <a href="/Home/Index?kategori=Erkek Bakım" class="sub-nav-link">Erkek Bakım</a>
+                <span class="sub-nav-divider"></span>
+                <a href="/Home/Index?kategori=Kişisel Bakım" class="sub-nav-link">Kişisel Bakım</a>
+                <span class="sub-nav-divider"></span>
+                <a href="/Home/Index?kategori=Anne & Bebek" class="sub-nav-link">Anne & Bebek</a>
+                <span class="sub-nav-divider"></span>
+                <a href="/Home/Index?kategori=Ev & Yaşam" class="sub-nav-link">Ev & Yaşam</a>
             </div>
         </div>
     </header>
@@ -358,5 +329,139 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- AKILLI GÜZELLİK ASİSTANI CHAT ARAYÜZÜ -->
+    <div class="chat-widget-container">
+        <!-- Sohbet Açma Butonu -->
+        <button class="chat-toggle-btn" id="chatToggleBtn" title="Güzellik Asistanı">
+            <i class="bi bi-chat-dots-fill"></i>
+        </button>
+
+        <!-- Sohbet Kutusu -->
+        <div class="chat-box" id="chatBox">
+            <!-- Başlık -->
+            <div class="chat-header">
+                <span class="chat-header-title">
+                    <i class="bi bi-stars"></i> Güzellik Asistanı
+                </span>
+                <button class="chat-header-close" id="chatCloseBtn">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Mesajlar -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message assistant">
+                    Merhaba! Ben GraWat Güzellik Asistanı. Size nasıl yardımcı olabilirim? 🌸
+                </div>
+            </div>
+
+            <!-- Giriş Alanı -->
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Mesajınızı yazın..." autocomplete="off" />
+                <button class="chat-send-btn" id="chatSendBtn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sohbet Kontrol JavaScript -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const chatToggleBtn = document.getElementById("chatToggleBtn");
+            const chatCloseBtn = document.getElementById("chatCloseBtn");
+            const chatBox = document.getElementById("chatBox");
+            const chatInput = document.getElementById("chatInput");
+            const chatSendBtn = document.getElementById("chatSendBtn");
+            const chatMessages = document.getElementById("chatMessages");
+
+            // Sohbet pencerisini aç/kapat
+            chatToggleBtn.addEventListener("click", () => {
+                chatBox.classList.toggle("active");
+                if (chatBox.classList.contains("active")) {
+                    chatInput.focus();
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+
+            chatCloseBtn.addEventListener("click", () => {
+                chatBox.classList.remove("active");
+            });
+
+            // Enter tuşuyla gönderme
+            chatInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    sendMessage();
+                }
+            });
+
+            chatSendBtn.addEventListener("click", sendMessage);
+
+            async function sendMessage() {
+                const messageText = chatInput.value.trim();
+                if (!messageText) return;
+
+                // Girişi temizle
+                chatInput.value = "";
+
+                // Kullanıcı mesajını ekle
+                appendMessage(messageText, "user");
+
+                // 'Düşünüyor' göstergesini ekle
+                const typingIndicator = appendTypingIndicator();
+
+                try {
+                    // Fetch API ile istek gönder
+                    const response = await fetch('/Chat/SendMessage', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ message: messageText })
+                    });
+
+                    // Düşünüyor göstergesini kaldır
+                    typingIndicator.remove();
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            appendMessage(data.reply, "assistant");
+                        } else {
+                            appendMessage("Bir hata oluştu: " + (data.reply || "Bilinmeyen hata"), "assistant");
+                        }
+                    } else {
+                        appendMessage("Sunucuyla bağlantı kurulamadı. Lütfen tekrar deneyin.", "assistant");
+                    }
+                } catch (error) {
+                    typingIndicator.remove();
+                    appendMessage("Bir ağ hatası oluştu. Lütfen bağlantınızı kontrol edin.", "assistant");
+                    console.error("Chat error:", error);
+                }
+            }
+
+            function appendMessage(text, sender) {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("chat-message", sender);
+                
+                // Satır sonlarını br etiketlerine çevir
+                messageDiv.innerHTML = text.replace(/\n/g, "<br>");
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function appendTypingIndicator() {
+                const typingDiv = document.createElement("div");
+                typingDiv.classList.add("chat-message", "assistant", "typing");
+                typingDiv.innerHTML = '✨ Düşünüyor <div class="typing-dots"><span></span><span></span><span></span></div>';
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return typingDiv;
+            }
+        });
+    </script>
 </body>
 </html>
