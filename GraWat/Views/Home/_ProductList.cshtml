@@ -1,0 +1,95 @@
+@model IEnumerable<GraWat.Models.Urun>
+
+@if (!Model.Any())
+{
+    <div class="col-12 text-center py-5">
+        <div class="display-1 text-muted mb-3"><i class="bi bi-emoji-frown"></i></div>
+        <h4 class="fw-bold text-dark">Kriterlere Uygun Ürün Bulunamadı</h4>
+        <p class="text-muted">Lütfen arama kelimenizi veya filtre seçimlerinizi değiştirmeyi deneyin.</p>
+    </div>
+}
+else
+{
+    @foreach (var urun in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 bg-white position-relative" style="border-radius: 20px; transition: transform 0.3s ease, box-shadow 0.3s ease; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 15px 30px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)';" >
+                
+                @* Resim Alanı *@
+                <div class="position-relative w-100" style="padding-top: 100%; background: linear-gradient(135deg, #fcefe9 0%, #f3dcd4 100%);">
+                    @{
+                        var favoriIds = ViewBag.FavoriUrunIds as List<int> ?? new List<int>();
+                        var isFavorited = favoriIds.Contains(urun.Id);
+                    }
+                    <!-- Favori Ekle / Çıkar Kalp Butonu -->
+                    <button type="button" class="btn favori-toggle-btn position-absolute" data-id="@urun.Id" 
+                            style="top: 12px; right: 12px; z-index: 10; width: 36px; height: 36px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.85); border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.2s ease;"
+                            onmouseover="this.style.transform='scale(1.1)';"
+                            onmouseout="this.style.transform='scale(1)';">
+                        <i class="bi @(isFavorited ? "bi-heart-fill text-danger" : "bi-heart text-dark") fs-5"></i>
+                    </button>
+
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center p-3">
+                        @if (!string.IsNullOrEmpty(urun.ResimYolu))
+                        {
+                            var imgSrc = urun.ResimYolu.StartsWith("http") ? urun.ResimYolu : $"/img/{urun.ResimYolu}";
+                            <img src="@imgSrc" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="@urun.Ad" />
+                        }
+                        else
+                        {
+                            <span style="font-size: 4rem;">💄</span>
+                        }
+                    </div>
+                </div>
+
+                @* İçerik Alanı *@
+                <div class="card-body d-flex flex-column justify-content-between p-3">
+                    <div class="text-start">
+                        <span class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">@urun.Kategori</span>
+                        <h6 class="fw-bold text-dark text-truncate mt-1 mb-1" title="@urun.Ad" style="font-size: 1rem;">
+                            @urun.Ad
+                        </h6>
+                        
+                        @* Yıldızlı Değerlendirme *@
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="text-warning me-2" style="font-size: 0.85rem;">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <span class="text-muted" style="font-size: 0.8rem; font-weight: 500;">(5.0)</span>
+                        </div>
+                    </div>
+
+                    @* Fiyat ve Aksiyon Butonu *@
+                    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light">
+                        <div class="text-start">
+                            <span class="text-muted d-block" style="font-size: 0.75rem;">Fiyat</span>
+                            <span class="fs-5 fw-bold text-dark">@urun.Fiyat.ToString("C")</span>
+                        </div>
+                        
+                        @if (urun.StokAdedi > 0)
+                        {
+                            <button type="button" class="btn sepete-ekle-btn d-flex align-items-center justify-content-center" data-id="@urun.Id" 
+                                    style="background-color: #3b0f42; color: white; width: 42px; height: 42px; border-radius: 12px; border: none; transition: all 0.2s ease;"
+                                    onmouseover="this.style.backgroundColor='#5c1866'; this.style.transform='scale(1.05)';"
+                                    onmouseout="this.style.backgroundColor='#3b0f42'; this.style.transform='scale(1)';">
+                                <i class="bi bi-plus-lg fs-4"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn d-flex align-items-center justify-content-center" disabled 
+                                    style="background-color: #e9ecef; color: #adb5bd; width: 42px; height: 42px; border-radius: 12px; border: none;">
+                                <i class="bi bi-x-lg fs-5"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+}

@@ -34,7 +34,7 @@
             <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
 
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                    <h3 class="fw-bold mb-0" style="color: #5c1866;">❤️ Favori Ürünlerim (@Model.Count())</h3>
+                    <h3 class="fw-bold mb-0" style="color: #5c1866;">❤️ Favori Ürünlerim (@ViewBag.TotalItems)</h3>
 
                     <form asp-controller="Profil" asp-action="Favorilerim" method="get" class="d-flex gap-2" style="max-width: 350px; width: 100%;">
                         <input type="text" name="favoriArama" value="@ViewBag.FavoriAramaKelimesi" class="form-control rounded-pill" placeholder="Favorilerimde ara..." />
@@ -49,7 +49,7 @@
                 </div>
 
                 <!-- YAPAY ZEKA DESTEKLİ AKILLI ÖNERİ KUTUSU -->
-                @if (Model != null && Model.Any() && ViewBag.AIRecommendation != null)
+                @if (ViewBag.AIRecommendation != null)
                 {
                     <div class="card border-0 mb-4 position-relative overflow-hidden recommendation-card shadow-sm">
                         <div class="card-body p-4">
@@ -105,6 +105,46 @@
                             </div>
                         }
                     </div>
+
+                    <!-- Sayfalama (Pagination) -->
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        <nav aria-label="Sayfalama" class="mt-5">
+                            <ul class="pagination justify-content-center">
+                                @* Önceki Butonu *@
+                                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link shadow-none" asp-controller="Profil" asp-action="Favorilerim" 
+                                       asp-route-page="@(ViewBag.CurrentPage - 1)" 
+                                       asp-route-favoriArama="@ViewBag.FavoriAramaKelimesi" 
+                                       style="border-radius: 20px 0 0 20px;">
+                                        <i class="bi bi-chevron-left"></i> Önceki
+                                    </a>
+                                </li>
+
+                                @* Sayfa Numaraları *@
+                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                                        <a class="page-link shadow-none" asp-controller="Profil" asp-action="Favorilerim" 
+                                           asp-route-page="@i" 
+                                           asp-route-favoriArama="@ViewBag.FavoriAramaKelimesi">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                @* Sonraki Butonu *@
+                                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                                    <a class="page-link shadow-none" asp-controller="Profil" asp-action="Favorilerim" 
+                                       asp-route-page="@(ViewBag.CurrentPage + 1)" 
+                                       asp-route-favoriArama="@ViewBag.FavoriAramaKelimesi"
+                                       style="border-radius: 0 20px 20px 0;">
+                                        Sonraki <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
                 }
                 else
                 {
@@ -141,5 +181,30 @@
     .recommendation-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 10px 25px rgba(92, 24, 102, 0.25) !important;
+    }
+
+    /* Sayfalama (Pagination) Tasarımı */
+    .pagination .page-link {
+        color: #5c1866;
+        border-color: #dee2e6;
+        padding: 8px 16px;
+        transition: all 0.2s ease;
+    }
+    .pagination .page-link:hover {
+        background-color: #fcefe9;
+        color: #5c1866;
+        border-color: #dee2e6;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #5c1866;
+        border-color: #5c1866;
+        color: #ffffff;
+        font-weight: bold;
+    }
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+        opacity: 0.6;
     }
 </style>

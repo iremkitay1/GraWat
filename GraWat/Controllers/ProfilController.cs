@@ -30,7 +30,7 @@ namespace GraWat.Controllers
 
         // --- FAVORİLERİM VE ÖZEL FAVORİ İÇİN ARAMA METODU ---
         [Authorize]
-        public async Task<IActionResult> Favorilerim(string favoriArama)
+        public async Task<IActionResult> Favorilerim(string favoriArama, int page = 1)
         {
             // 1. Giriş yapan kullanıcının kimliğini alıyoruz
             var userId = _userManager.GetUserId(User);
@@ -51,19 +51,36 @@ namespace GraWat.Controllers
                 ViewBag.FavoriAramaKelimesi = favoriArama;
             }
 
-            // 4. Verileri asenkron olarak listeye döküyoruz
-            var favoriler = await favoriQuery.ToListAsync();
-            var favoriUrunlerListesi = favoriler.Select(f => f.Urun).ToList();
+            // 4. Bütün Favori Ürünler (Yapay Zeka Önerisi İçin Tümünü Alıyoruz)
+            var tumFavoriler = await favoriQuery.Select(f => f.Urun).ToListAsync();
 
             // 5. YAPAY ZEKA DESTEKLİ AKILLI ÖNERİLER (Eğer favorilerde ürün varsa)
-            if (favoriUrunlerListesi.Any())
+            if (tumFavoriler.Any())
             {
-                var favoriUrunlerMetni = string.Join(", ", favoriUrunlerListesi.Select(u => $"{u.Ad} ({u.Kategori})"));
+                var favoriUrunlerMetni = string.Join(", ", tumFavoriler.Select(u => $"{u.Ad} ({u.Kategori})"));
                 var prompt = $"Bir müşteri şu ürünleri favorilerine ekledi: {favoriUrunlerMetni}. Bu müşteriye mağazamızdan sepetini büyütmesi için hangi 2 farklı kozmetik/bakım ürününü veya rutini önerirsin? Çok kısa ve çekici bir dille açıkla.";
 
-                var recommendation = await GetAIRecommendationAsync(prompt, favoriUrunlerListesi);
+                var recommendation = await GetAIRecommendationAsync(prompt, tumFavoriler);
                 ViewBag.AIRecommendation = recommendation;
             }
+
+            // 6. Sayfalama Hesaplamaları
+            int pageSize = 6;
+            int totalItems = tumFavoriler.Count;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (page < 1) page = 1;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+
+            // 7. Sayfalanmış Listeyi Getiriyoruz
+            var favoriUrunlerListesi = tumFavoriler
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
             return View(favoriUrunlerListesi);
         }
@@ -88,6 +105,53 @@ namespace GraWat.Controllers
             }
 
             return RedirectToAction(nameof(Favorilerim));
+        }
+
+        // --- AJAX FAVORİ EKLE/ÇIKAR ---
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> ToggleFavorite(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Favorilere eklemek için lütfen giriş yapınız.", redirectUrl = "/Identity/Account/Login" });
+                }
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+
+            var favori = await _context.Favoriler
+                .FirstOrDefaultAsync(f => f.UrunId == id && f.KullaniciId == userId);
+
+            bool isAdded;
+            if (favori != null)
+            {
+                _context.Favoriler.Remove(favori);
+                isAdded = false;
+            }
+            else
+            {
+                var yeniFavori = new Favoriler
+                {
+                    UrunId = id,
+                    KullaniciId = userId
+                };
+                _context.Favoriler.Add(yeniFavori);
+                isAdded = true;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var favoritesCount = await _context.Favoriler.CountAsync(f => f.KullaniciId == userId);
+
+            return Json(new { 
+                success = true, 
+                isAdded = isAdded, 
+                favoritesCount = favoritesCount, 
+                message = isAdded ? "Ürün favorilerinize eklendi!" : "Ürün favorilerinizden çıkarıldı!" 
+            });
         }
 
         private async Task<string> GetAIRecommendationAsync(string prompt, List<Urun> favoriUrunler)
@@ -167,7 +231,6 @@ namespace GraWat.Controllers
 
         private string GetMockRecommendation(List<Urun> favoriUrunler)
         {
-            // Kategorilere göre akıllı öneri üretme
             var kategoriler = favoriUrunler.Select(u => u.Kategori?.ToLower(new System.Globalization.CultureInfo("tr-TR")) ?? "").ToList();
 
             if (kategoriler.Any(k => k.Contains("makyaj")))

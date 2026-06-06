@@ -4,6 +4,22 @@
     ViewData["Title"] = "GraWat Vitrin";
 }
 
+<style>
+    .filter-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .filter-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .filter-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(59, 15, 66, 0.15);
+        border-radius: 10px;
+    }
+    .filter-sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(59, 15, 66, 0.3);
+    }
+</style>
+
 <div class="container mt-5 mb-5">
     @* Premium Hero Section *@
     <div class="hero-section text-center mb-5 d-flex flex-column justify-content-center align-items-center position-relative overflow-hidden" 
@@ -29,75 +45,171 @@
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-        @foreach (var urun in Model)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 bg-white position-relative" style="border-radius: 20px; transition: transform 0.3s ease, box-shadow 0.3s ease; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 15px 30px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)';" >
-                    
-                    @* Resim Alanı *@
-                    <div class="position-relative w-100" style="padding-top: 100%; background: linear-gradient(135deg, #fcefe9 0%, #f3dcd4 100%);">
-                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center p-3">
-                            @if (!string.IsNullOrEmpty(urun.ResimYolu))
-                            {
-                                <img src="/img/@urun.ResimYolu" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="@urun.Ad" />
-                            }
-                            else
-                            {
-                                <span style="font-size: 4rem;">💄</span>
-                            }
+    <div class="row g-4 mt-2">
+        <!-- Sol Taraf: Filtreleme Paneli -->
+        <div class="col-lg-3 filter-sidebar" style="position: sticky; top: 80px; height: calc(100vh - 80px); overflow-y: auto;">
+            <div class="card shadow-sm border-0 rounded-4 p-4 bg-white" 
+                 style="border: 1px solid rgba(0,0,0,0.05) !important; border-right: 2px solid rgba(255, 204, 0, 0.35) !important; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;">
+                <h5 class="fw-bold text-dark mb-4 d-flex align-items-center">
+                    <i class="bi bi-funnel-fill text-warning me-2"></i> Filtrele & Ara
+                </h5>
+                
+                <!-- Arama Kutusu -->
+                <div class="mb-4 text-start">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Canlı Arama</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="liveSearchInput" class="form-control bg-light border-0" placeholder="Ürün adı ara..." value="@ViewBag.ArananKelime">
+                    </div>
+                </div>
+
+                <!-- Kategoriler -->
+                <div class="mb-4 text-start">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Kategoriler</label>
+                    <div id="categoryFilterContainer">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input category-checkbox" type="checkbox" value="Makyaj" id="catMakyaj">
+                            <label class="form-check-label text-dark" for="catMakyaj">Makyaj</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input category-checkbox" type="checkbox" value="Cilt Bakım" id="catCilt">
+                            <label class="form-check-label text-dark" for="catCilt">Cilt Bakımı</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input category-checkbox" type="checkbox" value="Parfüm/Deodorant" id="catParfum">
+                            <label class="form-check-label text-dark" for="catParfum">Parfüm / Deodorant</label>
                         </div>
                     </div>
+                </div>
 
-                    @* İçerik Alanı *@
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="text-start">
-                            <span class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">@urun.Kategori</span>
-                            <h6 class="fw-bold text-dark text-truncate mt-1 mb-1" title="@urun.Ad" style="font-size: 1rem;">
-                                @urun.Ad
-                            </h6>
-                            
-                            @* Yıldızlı Değerlendirme *@
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="text-warning me-2" style="font-size: 0.85rem;">
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                </div>
-                                <span class="text-muted" style="font-size: 0.8rem; font-weight: 500;">(5.0)</span>
-                            </div>
-                        </div>
-
-                        @* Fiyat ve Aksiyon Butonu *@
-                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light">
-                            <div class="text-start">
-                                <span class="text-muted d-block" style="font-size: 0.75rem;">Fiyat</span>
-                                <span class="fs-5 fw-bold text-dark">@urun.Fiyat.ToString("C")</span>
-                            </div>
-                            
-                            @if (urun.StokAdedi > 0)
-                            {
-                                <button type="button" class="btn sepete-ekle-btn d-flex align-items-center justify-content-center" data-id="@urun.Id" 
-                                        style="background-color: #3b0f42; color: white; width: 42px; height: 42px; border-radius: 12px; border: none; transition: all 0.2s ease;"
-                                        onmouseover="this.style.backgroundColor='#5c1866'; this.style.transform='scale(1.05)';"
-                                        onmouseout="this.style.backgroundColor='#3b0f42'; this.style.transform='scale(1)';">
-                                    <i class="bi bi-plus-lg fs-4"></i>
-                                </button>
-                            }
-                            else
-                            {
-                                <button type="button" class="btn d-flex align-items-center justify-content-center" disabled 
-                                        style="background-color: #e9ecef; color: #adb5bd; width: 42px; height: 42px; border-radius: 12px; border: none;">
-                                    <i class="bi bi-x-lg fs-5"></i>
-                                </button>
-                            }
-                        </div>
+                <!-- Fiyat Aralığı -->
+                <div class="mb-4 text-start">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Fiyat Aralığı (TL)</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="number" id="minPriceInput" class="form-control bg-light border-0 text-center px-1" placeholder="Min" min="0" style="font-size: 0.9rem;">
+                        <span class="text-muted">-</span>
+                        <input type="number" id="maxPriceInput" class="form-control bg-light border-0 text-center px-1" placeholder="Max" min="0" style="font-size: 0.9rem;">
                     </div>
+                </div>
 
+                <!-- Temizleme Butonu -->
+                <button type="button" id="clearFiltersBtn" class="btn btn-outline-warning w-100 rounded-pill fw-bold btn-sm">
+                    Filtreleri Temizle
+                </button>
+            </div>
+        </div>
+
+        <!-- Sağ Taraf: Ürün Vitrini -->
+        <div class="col-lg-9 position-relative">
+            <!-- Spinner / Yükleniyor Katmanı -->
+            <div id="productLoadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-none align-items-start justify-content-center pt-5" style="z-index: 10; border-radius: 20px;">
+                <div class="d-flex flex-column align-items-center" style="margin-top: 100px;">
+                    <div class="spinner-border text-warning" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                    <span class="mt-3 fw-bold text-dark">Ürünler yükleniyor...</span>
                 </div>
             </div>
-        }
+
+            <!-- Ürün Grid Container -->
+            <div id="productsGridContainer" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <partial name="_ProductList" model="Model" />
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // URL Parametresinden Gelen Kategoriyi Seçili Yap
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryParam = urlParams.get('kategori');
+            
+            if (categoryParam) {
+                document.querySelectorAll('.category-checkbox').forEach(cb => {
+                    const val = cb.value.toLowerCase();
+                    const param = categoryParam.toLowerCase();
+                    if (val === param || (param === 'cilt bakımı' && val === 'cilt bakım')) {
+                        cb.checked = true;
+                    }
+                });
+            }
+
+            // AJAX Filtreleme İstek Fonksiyonu
+            const applyFilters = () => {
+                const search = document.getElementById('liveSearchInput').value;
+                const minPrice = document.getElementById('minPriceInput').value;
+                const maxPrice = document.getElementById('maxPriceInput').value;
+                
+                const categories = [];
+                document.querySelectorAll('.category-checkbox:checked').forEach(cb => {
+                    categories.push(cb.value);
+                });
+                
+                // Query Parameter oluştur
+                const params = new URLSearchParams();
+                if (search) params.append('searchString', search);
+                if (minPrice) params.append('minPrice', minPrice);
+                if (maxPrice) params.append('maxPrice', maxPrice);
+                categories.forEach(cat => params.append('kategoriler', cat));
+                
+                // URL'i sayfa yenilemeden güncelle
+                const newUrl = window.location.pathname + '?' + params.toString();
+                window.history.pushState({ path: newUrl }, '', newUrl);
+                
+                // Yükleme katmanını göster
+                const overlay = document.getElementById('productLoadingOverlay');
+                overlay.classList.remove('d-none');
+                overlay.classList.add('d-flex');
+                
+                // AJAX Fetch İsteği Gönder
+                fetch(newUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error("Arama yapılamadı.");
+                    return res.text();
+                })
+                .then(html => {
+                    document.getElementById('productsGridContainer').innerHTML = html;
+                })
+                .catch(err => console.error("Filter request error:", err))
+                .finally(() => {
+                    // Yükleme katmanını gizle
+                    overlay.classList.remove('d-flex');
+                    overlay.classList.add('d-none');
+                });
+            };
+
+            // Debounce Optimizasyonu (Gecikmeli Arama)
+            let debounceTimer;
+            const debounce = (callback, delay = 300) => {
+                return (...args) => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => callback(...args), delay);
+                };
+            };
+
+            // Olay Dinleyicileri (Event Listeners)
+            document.getElementById('liveSearchInput').addEventListener('input', debounce(applyFilters, 300));
+            document.getElementById('minPriceInput').addEventListener('input', debounce(applyFilters, 400));
+            document.getElementById('maxPriceInput').addEventListener('input', debounce(applyFilters, 400));
+            
+            document.querySelectorAll('.category-checkbox').forEach(cb => {
+                cb.addEventListener('change', applyFilters);
+            });
+
+            // Filtreleri Temizle Butonu
+            document.getElementById('clearFiltersBtn').addEventListener('click', function () {
+                document.getElementById('liveSearchInput').value = '';
+                document.getElementById('minPriceInput').value = '';
+                document.getElementById('maxPriceInput').value = '';
+                document.querySelectorAll('.category-checkbox').forEach(cb => cb.checked = false);
+                applyFilters();
+            });
+        });
+    </script>
+}

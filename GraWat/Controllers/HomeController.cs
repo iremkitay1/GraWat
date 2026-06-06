@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using GraWat.Data;
 using GraWat.Models;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore; // ToListAsync ve AsQueryable için gerekli
+using System.Security.Claims;
 
 namespace GraWat.Controllers
 {
@@ -19,7 +20,7 @@ namespace GraWat.Controllers
             _context = context;
         }
 
-        public IActionResult Index(string kategori, string searchString)
+        public IActionResult Index(List<string> kategoriler, string kategori, string searchString, decimal? minPrice, decimal? maxPrice)
         {
             var urunlerQuery = _context.Urunler.AsQueryable();
 
@@ -30,18 +31,57 @@ namespace GraWat.Controllers
                 ViewBag.ArananKelime = searchString;
             }
 
-            // KRİTİK DÜZELTME: Kategori Filtrelemesi (Büyük/Küçük Harf ve Türkçe Karakter Uyumlu)
+            // Çoklu ve Tekil Kategori Filtrelemesi (Çapraz Bağlantı Uyumlu)
+            var secilenKategoriler = new List<string>();
+            if (kategoriler != null && kategoriler.Any())
+            {
+                secilenKategoriler.AddRange(kategoriler);
+            }
             if (!string.IsNullOrEmpty(kategori))
             {
-                // Linkten gelen "Cilt Bakım" kelimesini tamamen küçük harfe çeviriyoruz: "cilt bakım"
-                string aranan = kategori.Trim().ToLower();
+                secilenKategoriler.Add(kategori);
+            }
 
-                // Veritabanındaki "Cilt Bakımı" değerini de küçük harfe çevirip 
-                // linkten gelen "cilt bakım" kelimesini içeriyor mu diye bakıyoruz:
-                urunlerQuery = urunlerQuery.Where(u => u.Kategori.ToLower().Contains(aranan) || aranan.Contains(u.Kategori.ToLower()));
+            if (secilenKategoriler.Any())
+            {
+                var lowerKategoriler = secilenKategoriler.Select(k => k.Trim().ToLower()).ToList();
+                urunlerQuery = urunlerQuery.Where(u => lowerKategoriler.Any(lk => 
+                    u.Kategori.ToLower().Contains(lk) || lk.Contains(u.Kategori.ToLower())
+                ));
+            }
+
+            // Fiyat Aralığı Filtrelemesi
+            if (minPrice.HasValue)
+            {
+                urunlerQuery = urunlerQuery.Where(u => u.Fiyat >= minPrice.Value);
+            }
+            if (maxPrice.HasValue)
+            {
+                urunlerQuery = urunlerQuery.Where(u => u.Fiyat <= maxPrice.Value);
             }
 
             var urunlerListesi = urunlerQuery.ToList();
+
+            // Favori ürün ID'lerini ViewBag'e aktarma
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                ViewBag.FavoriUrunIds = _context.Favoriler
+                    .Where(f => f.KullaniciId == userId)
+                    .Select(f => f.UrunId)
+                    .ToList();
+            }
+            else
+            {
+                ViewBag.FavoriUrunIds = new List<int>();
+            }
+
+            // Eğer AJAX isteği ise sadece Kısmi Görünümü (Partial View) dönüyoruz
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_ProductList", urunlerListesi);
+            }
+
             return View(urunlerListesi);
         }
 

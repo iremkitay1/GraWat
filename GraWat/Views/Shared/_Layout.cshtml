@@ -1,6 +1,7 @@
 ﻿﻿@using System.Security.Claims
 @using GraWat.Data
 @inject ApplicationDbContext _context
+@inject GraWatContext _grawatContext
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -198,23 +199,28 @@
                         }
                     </ul>
 
-                    @* ARAMA ÇUBUĞU *@
-                    <form asp-controller="Home" asp-action="Index" method="get" class="d-flex mx-auto" style="max-width: 250px;">
-                        <div class="input-group input-group-sm">
-                            <input type="text" name="searchString" class="form-control border-0 rounded-pill-start" placeholder="Ürün ara...">
-                            <button type="submit" class="btn bg-white border-0 rounded-pill-end"><i class="bi bi-search"></i></button>
-                        </div>
-                    </form>
-
                     <ul class="navbar-nav align-items-center">
-                        @* SEPET SAYACI HESAPLAMA *@
+                        @* SEPET VE FAVORİ SAYACI HESAPLAMA *@
                         @{
                             int sepetSayac = 0;
+                            int favoriSayac = 0;
                             if (User.Identity.IsAuthenticated)
                             {
                                 var aktifKullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                                 sepetSayac = _context.SepetItems.Where(s => s.KullaniciId == aktifKullaniciId).Sum(s => s.Adet);
+                                favoriSayac = _grawatContext.Favoriler.Count(f => f.KullaniciId == aktifKullaniciId);
                             }
+                        }
+
+                        @* FAVORİLERİM BUTONU (Sadece Müşteriye) *@
+                        @if (User.Identity.IsAuthenticated && User.Identity.Name != "admin@gmail.com")
+                        {
+                            <li class="nav-item me-3">
+                                <a class="nav-link d-flex align-items-center" asp-controller="Profil" asp-action="Favorilerim">
+                                    <i class="bi bi-heart fs-4 me-1 text-danger"></i>
+                                    Favorilerim <span id="favori-badge" class="badge rounded-pill bg-danger ms-1">@favoriSayac</span>
+                                </a>
+                            </li>
                         }
 
                         @* SEPETİM BUTONU (Sadece Müşteriye) *@
