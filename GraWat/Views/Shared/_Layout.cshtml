@@ -1,4 +1,4 @@
-﻿﻿@using System.Security.Claims
+@using System.Security.Claims
 @using GraWat.Data
 @inject ApplicationDbContext _context
 @inject GraWatContext _grawatContext
@@ -54,7 +54,6 @@
             background-color: #4a1252 !important;
             z-index: 9999 !important;
             border-bottom: 2px solid #FFCC00 !important;
-            overflow-x: auto !important;
             white-space: nowrap !important;
             scrollbar-width: none !important; /* Firefox */
             -ms-overflow-style: none !important;  /* IE/Edge */
@@ -62,6 +61,23 @@
         
         .sub-navbar::-webkit-scrollbar {
             display: none !important; /* Chrome/Safari */
+        }
+
+        /* Mobil ve küçük ekranlar için yatay kaydırma yapısını koru */
+        @@media (max-width: 767.98px) {
+            .sub-navbar {
+                overflow-x: auto !important;
+            }
+            .subcategory-dropdown {
+                display: none !important;
+            }
+        }
+
+        /* Masaüstü ekranlarda menülerin taşmasını engellememek için overflow: visible yapıyoruz */
+        @@media (min-width: 768px) {
+            .sub-navbar {
+                overflow: visible !important;
+            }
         }
 
         .sub-nav-link {
@@ -87,6 +103,48 @@
             display: inline-block !important;
             vertical-align: middle !important;
             flex-shrink: 0 !important;
+        }
+
+        /* YENİ ALT KATEGORİ MENÜSÜ (DROPDOWN) STİLLERİ */
+        .category-wrapper {
+            position: relative !important;
+            display: inline-block !important;
+        }
+
+        .subcategory-dropdown {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.1) !important;
+            z-index: 1050 !important;
+            border-radius: 8px !important;
+            padding: 12px 0 !important;
+            min-width: 180px !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transition: all 0.3s ease !important;
+            text-align: left !important;
+        }
+
+        .category-wrapper:hover .subcategory-dropdown {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .subcategory-dropdown a {
+            display: block !important;
+            padding: 8px 20px !important;
+            color: #333333 !important;
+            text-decoration: none !important;
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .subcategory-dropdown a:hover {
+            color: #3b0f42 !important; /* Projenin ana tema rengi (mor) */
+            background-color: #f8f9fa !important;
         }
 
         .nav-link, .navbar-brand {
@@ -278,21 +336,69 @@
         <!-- KATEGORİ SUB-NAVBAR -->
         <div class="sub-navbar">
             <div class="container d-flex align-items-center justify-content-start justify-content-md-center h-100">
-                <a href="/Home/Index?kategori=Makyaj" class="sub-nav-link">Makyaj</a>
+                <div class="category-wrapper">
+                    <a href="/Home/Index?kategori=Makyaj" class="sub-nav-link">Makyaj</a>
+                    <div class="subcategory-dropdown">
+                        <a href="/Home/Index?kategori=Makyaj&searchString=Ruj">Ruj</a>
+                        <a href="/Home/Index?kategori=Makyaj&searchString=Maskara">Maskara</a>
+                        <a href="/Home/Index?kategori=Makyaj&searchString=Fondöten">Fondöten</a>
+                    </div>
+                </div>
                 <span class="sub-nav-divider"></span>
-                <a href="/Home/Index?kategori=Cilt Bakım" class="sub-nav-link">Cilt Bakım</a>
+                <div class="category-wrapper">
+                    <a href="/Home/Index?kategori=Cilt Bakım" class="sub-nav-link">Cilt Bakım</a>
+                    <div class="subcategory-dropdown">
+                        <a href="/Home/Index?kategori=Cilt Bakım&searchString=Nemlendirici">Nemlendirici</a>
+                        <a href="/Home/Index?kategori=Cilt Bakım&searchString=Yüz Temizleme Jeli">Yüz Temizleme Jeli</a>
+                        <a href="/Home/Index?kategori=Cilt Bakım&searchString=Tonik">Tonik</a>
+                    </div>
+                </div>
                 <span class="sub-nav-divider"></span>
-                <a href="/Home/Index?kategori=Saç Bakım" class="sub-nav-link">Saç Bakım</a>
+                <div class="category-wrapper">
+                    <a href="/Home/Index?kategori=Saç Bakım" class="sub-nav-link">Saç Bakım</a>
+                    <div class="subcategory-dropdown">
+                        <a href="/Home/Index?kategori=Saç Bakım&searchString=Şampuan">Şampuan</a>
+                        <a href="/Home/Index?kategori=Saç Bakım&searchString=Saç Kremi">Saç Kremi</a>
+                        <a href="/Home/Index?kategori=Saç Bakım&searchString=Saç Maskesi">Saç Maskesi</a>
+                        <a href="/Home/Index?kategori=Saç Bakım&searchString=Saç Boyası">Saç Boyası</a>
+                    </div>
+                </div>
                 <span class="sub-nav-divider"></span>
-                <a href="/Home/Index?kategori=Parfüm/Deodorant" class="sub-nav-link">Parfüm & Deodorant</a>
+                <div class="category-wrapper">
+                    <a href="/Home/Index?kategori=Parfüm/Deodorant" class="sub-nav-link">Parfüm & Deodorant</a>
+                    <div class="subcategory-dropdown">
+                        <a href="/Home/Index?kategori=Parfüm/Deodorant&searchString=Kadın Parfüm">Kadın Parfüm</a>
+                        <a href="/Home/Index?kategori=Parfüm/Deodorant&searchString=Erkek Parfüm">Erkek Parfüm</a>
+                        <a href="/Home/Index?kategori=Parfüm/Deodorant&searchString=Deodorant & Roll-on">Deodorant & Roll-on</a>
+                    </div>
+                </div>
                 <span class="sub-nav-divider"></span>
-                <a href="/Home/Index?kategori=Erkek Bakım" class="sub-nav-link">Erkek Bakım</a>
+                <div class="category-wrapper">
+                    <a href="/Home/Index?kategori=Erkek Bakım" class="sub-nav-link">Erkek Bakım</a>
+                    <div class="subcategory-dropdown">
+                        <a href="/Home/Index?kategori=Erkek Bakım&searchString=Tıraş Ürünleri">Tıraş Ürünleri</a>
+                        <a href="/Home/Index?kategori=Erkek Bakım&searchString=Sakal & Bıyık Bakımı">Sakal & Bıyık Bakımı</a>
+                        <a href="/Home/Index?kategori=Erkek Bakım&searchString=Erkek Cilt Bakımı">Erkek Cilt Bakımı</a>
+                    </div>
+                </div>
                 <span class="sub-nav-divider"></span>
-                <a href="/Home/Index?kategori=Kişisel Bakım" class="sub-nav-link">Kişisel Bakım</a>
+                <div class="category-wrapper">
+                    <a href="/Home/Index?kategori=Kişisel Bakım" class="sub-nav-link">Kişisel Bakım</a>
+                    <div class="subcategory-dropdown">
+                        <a href="/Home/Index?kategori=Kişisel Bakım&searchString=Ağız & Diş Bakımı">Ağız & Diş Bakımı</a>
+                        <a href="/Home/Index?kategori=Kişisel Bakım&searchString=Duş Jeli & Banyo">Duş Jeli & Banyo</a>
+                        <a href="/Home/Index?kategori=Kişisel Bakım&searchString=Kadın Hijyen Ürünleri">Kadın Hijyen Ürünleri</a>
+                    </div>
+                </div>
                 <span class="sub-nav-divider"></span>
-                <a href="/Home/Index?kategori=Anne & Bebek" class="sub-nav-link">Anne & Bebek</a>
-                <span class="sub-nav-divider"></span>
-                <a href="/Home/Index?kategori=Ev & Yaşam" class="sub-nav-link">Ev & Yaşam</a>
+                <div class="category-wrapper">
+                    <a href="/Home/Index?kategori=Güneş Ürünleri" class="sub-nav-link">Güneş Ürünleri</a>
+                    <div class="subcategory-dropdown">
+                        <a href="/Home/Index?kategori=Güneş Ürünleri&searchString=Yüz Güneş Kremi">Yüz Güneş Kremi</a>
+                        <a href="/Home/Index?kategori=Güneş Ürünleri&searchString=Vücut Güneş Kremi">Vücut Güneş Kremi</a>
+                        <a href="/Home/Index?kategori=Güneş Ürünleri&searchString=Bronzlaştırıcı Yağ">Bronzlaştırıcı Yağ</a>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -308,7 +414,11 @@
                 <li class="list-group-item bg-transparent border-0"><a href="/Home/Index" class="text-white text-decoration-none side-link d-block p-3">Tümü</a></li>
                 <li class="list-group-item bg-transparent border-0"><a href="/Home/Index?kategori=Makyaj" class="text-white text-decoration-none side-link d-block p-3">Makyaj</a></li>
                 <li class="list-group-item bg-transparent border-0"><a href="/Home/Index?kategori=Cilt Bakım" class="text-white text-decoration-none side-link d-block p-3">Cilt Bakımı</a></li>
+                <li class="list-group-item bg-transparent border-0"><a href="/Home/Index?kategori=Güneş Ürünleri" class="text-white text-decoration-none side-link d-block p-3">Güneş Ürünleri</a></li>
+                <li class="list-group-item bg-transparent border-0"><a href="/Home/Index?kategori=Saç Bakım" class="text-white text-decoration-none side-link d-block p-3">Saç Bakımı</a></li>
                 <li class="list-group-item bg-transparent border-0"><a href="/Home/Index?kategori=Parfüm/Deodorant" class="text-white text-decoration-none side-link d-block p-3">Parfüm / Deodorant</a></li>
+                <li class="list-group-item bg-transparent border-0"><a href="/Home/Index?kategori=Erkek Bakım" class="text-white text-decoration-none side-link d-block p-3">Erkek Bakımı</a></li>
+                <li class="list-group-item bg-transparent border-0"><a href="/Home/Index?kategori=Kişisel Bakım" class="text-white text-decoration-none side-link d-block p-3">Kişisel Bakım</a></li>
             </ul>
         </div>
     </div>

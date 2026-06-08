@@ -206,3 +206,38 @@ $(document).on("click", ".favori-toggle-btn", function (e) {
         });
     });
 });
+
+// jQuery Validation Override and Translation for Turkish Locale
+if (typeof $.validator !== 'undefined') {
+    // 1. Türkçe Hata Mesajları Çevirisi
+    jQuery.extend(jQuery.validator.messages, {
+        required: "Bu alanın doldurulması zorunludur.",
+        remote: "Lütfen bu alanı düzeltin.",
+        email: "Lütfen geçerli bir e-posta adresi giriniz.",
+        url: "Lütfen geçerli bir web adresi (URL) giriniz.",
+        date: "Lütfen geçerli bir tarih giriniz.",
+        dateISO: "Lütfen geçerli bir tarih giriniz (ISO formatında).",
+        number: "Lütfen geçerli bir sayı giriniz.",
+        digits: "Lütfen sadece sayısal karakterler giriniz.",
+        creditcard: "Lütfen geçerli bir kredi kartı numarası giriniz.",
+        equalTo: "Lütfen aynı değeri tekrar giriniz.",
+        extension: "Lütfen geçerli uzantıya sahip bir dosya seçiniz.",
+        maxlength: jQuery.validator.format("Lütfen en fazla {0} karakter uzunluğunda bir değer giriniz."),
+        minlength: jQuery.validator.format("Lütfen en az {0} karakter uzunluğunda bir değer giriniz."),
+        rangelength: jQuery.validator.format("Lütfen en az {0} ve en fazla {1} karakter uzunluğunda bir değer giriniz."),
+        range: jQuery.validator.format("Lütfen {0} ile {1} arasında bir değer giriniz."),
+        max: jQuery.validator.format("Lütfen {0} değerine eşit veya daha küçük bir değer giriniz."),
+        min: jQuery.validator.format("Lütfen {0} değerine eşit veya daha büyük bir değer giriniz.")
+    });
+
+    // 2. Ondalık Ayracı Olarak Virgül Desteği (Decimal/Number Parser Override)
+    $.validator.methods.number = function (value, element) {
+        return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:[\s\.,]\d{3})+)(?:[\.,]\d+)?$/.test(value);
+    };
+    $.validator.methods.range = function (value, element, param) {
+        var globalizedValue = value.replace(",", ".");
+        return this.optional(element) || (globalizedValue >= param[0] && globalizedValue <= param[1]);
+    };
+}
+
+

@@ -1,6 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using GraWat.Data;
 using Microsoft.AspNetCore.Identity;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+
+// Global düzeyde varsayılan kültürü tr-TR (Türkçe / Türkiye) olarak ayarlayalım
+var cultureInfo = new CultureInfo("tr-TR");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +36,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Request Localization Middleware entegrasyonu
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("tr-TR"),
+    SupportedCultures = new[] { cultureInfo },
+    SupportedUICultures = new[] { cultureInfo }
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
@@ -42,6 +57,11 @@ app.MapRazorPages();
 // --- ADMİN ROLÜ VE KULLANICI OLUŞTURMA (EN TEMİZ VE GARANTİ YOL) ---
 using (var scope = app.Services.CreateScope())
 {
+    // Veritabanı tohumlama (Seed Data)
+    var grawatContext = scope.ServiceProvider.GetRequiredService<GraWatContext>();
+    var identityContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    DbInitializer.SeedAsync(grawatContext, identityContext).GetAwaiter().GetResult();
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 

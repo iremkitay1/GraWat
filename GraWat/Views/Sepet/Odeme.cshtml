@@ -12,7 +12,7 @@
 
                         <div class="payment-options">
                             <!-- 1. Kredi Kartı Seçeneği -->
-                            <div class="form-check payment-card mb-3 p-3 border rounded-3 shadow-sm" onclick="toggleCardForm(true)">
+                            <div class="form-check payment-card mb-3 p-3 border rounded-3 shadow-sm" onclick="selectPaymentMethod('kart')">
                                 <input class="form-check-input" type="radio" name="odemeYontemi" id="kart" value="Kredi Kartı" checked>
                                 <label class="form-check-label d-flex align-items-center w-100" for="kart">
                                     <i class="bi bi-credit-card-2-front fs-3 me-3 text-primary"></i>
@@ -29,31 +29,31 @@
 
                                 <div class="mb-3 text-start">
                                     <label class="form-label small fw-bold text-dark">Kart Üzerindeki İsim</label>
-                                    <input type="text" class="form-control" placeholder="Ad Soyad" maxlength="50">
+                                    <input type="text" name="kartIsim" id="kartIsim" class="form-control" placeholder="Ad Soyad" maxlength="50" required>
                                 </div>
 
                                 <div class="mb-3 text-start">
                                     <label class="form-label small fw-bold text-dark">Kart Numarası</label>
-                                    <input type="text" id="cardNo" class="form-control"
+                                    <input type="text" id="cardNo" name="cardNo" class="form-control"
                                            placeholder="0000 0000 0000 0000"
                                            maxlength="19"
-                                           oninput="formatCardNumber(this)">
+                                           oninput="formatCardNumber(this)" required>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3 text-start">
                                         <label class="form-label small fw-bold text-dark">Son Kullanma (AA/YY)</label>
-                                        <input type="text" id="expiryDate" class="form-control"
+                                        <input type="text" id="expiryDate" name="expiryDate" class="form-control"
                                                placeholder="MM/YY"
                                                maxlength="5"
-                                               oninput="formatExpiry(this)">
+                                               oninput="formatExpiry(this)" required>
                                     </div>
                                     <div class="col-md-6 mb-3 text-start">
                                         <label class="form-label small fw-bold text-dark">CVV</label>
-                                        <input type="text" class="form-control"
+                                        <input type="text" name="cvv" id="cvv" class="form-control"
                                                placeholder="123"
                                                maxlength="3"
-                                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                     </div>
                                 </div>
                                 <div class="text-muted small text-start">
@@ -62,7 +62,7 @@
                             </div>
 
                             <!-- 2. Kapıda Nakit -->
-                            <div class="form-check payment-card mb-3 p-3 border rounded-3 shadow-sm" onclick="toggleCardForm(false)">
+                            <div class="form-check payment-card mb-3 p-3 border rounded-3 shadow-sm" onclick="selectPaymentMethod('nakit')">
                                 <input class="form-check-input" type="radio" name="odemeYontemi" id="nakit" value="Kapıda Nakit">
                                 <label class="form-check-label d-flex align-items-center w-100" for="nakit">
                                     <i class="bi bi-cash-stack fs-3 me-3 text-success"></i>
@@ -74,7 +74,7 @@
                             </div>
 
                             <!-- 3. Kapıda Kart -->
-                            <div class="form-check payment-card mb-4 p-3 border rounded-3 shadow-sm" onclick="toggleCardForm(false)">
+                            <div class="form-check payment-card mb-4 p-3 border rounded-3 shadow-sm" onclick="selectPaymentMethod('kapidaKart')">
                                 <input class="form-check-input" type="radio" name="odemeYontemi" id="kapidaKart" value="Kapıda Kart">
                                 <label class="form-check-label d-flex align-items-center w-100" for="kapidaKart">
                                     <i class="bi bi-person-vcard fs-3 me-3 text-info"></i>
@@ -99,10 +99,31 @@
 </div>
 
 <script>
-    // Formu açıp kapatan fonksiyon
+    // Formu açıp kapatan ve validation niteliklerini düzenleyen fonksiyon
     function toggleCardForm(show) {
         const form = document.getElementById('cardDetailsForm');
-        form.style.display = show ? 'block' : 'none';
+        if (form) {
+            form.style.display = show ? 'block' : 'none';
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (show) {
+                    input.setAttribute('required', 'required');
+                    input.removeAttribute('disabled');
+                } else {
+                    input.removeAttribute('required');
+                    input.setAttribute('disabled', 'disabled');
+                }
+            });
+        }
+    }
+
+    // Seçilen ödeme yöntemini check edip formu toggle eden fonksiyon
+    function selectPaymentMethod(radioId) {
+        const radio = document.getElementById(radioId);
+        if (radio) {
+            radio.checked = true;
+            toggleCardForm(radioId === 'kart');
+        }
     }
 
     // Kart numarasını 4'lü gruplar halinde ayırır
@@ -121,6 +142,14 @@
             input.value = value;
         }
     }
+
+    // Sayfa yüklendiğinde varsayılan seçeneğe göre formun ayarlanması
+    document.addEventListener("DOMContentLoaded", function () {
+        const kartRadio = document.getElementById('kart');
+        if (kartRadio) {
+            toggleCardForm(kartRadio.checked);
+        }
+    });
 
     // AJAX ile Sipariş Formu Yönetimi
     document.getElementById('odemeForm').addEventListener('submit', function (e) {
@@ -152,7 +181,7 @@
                 // Şık Başarı Animasyonu
                 Swal.fire({
                     title: 'Siparişiniz Başarıyla Alındı!',
-                    text: 'Siparişlerim sayfasına yönlendiriliyorsunuz...',
+                    text: 'Sipariş onay sayfasına yönlendiriliyorsunuz...',
                     icon: 'success',
                     timer: 2500,
                     showConfirmButton: false,
@@ -160,7 +189,7 @@
                     allowOutsideClick: false
                 }).then(() => {
                     // Zamanlamalı Yönlendirme (Redirect)
-                    window.location.href = '/Siparis/Siparislerim';
+                    window.location.href = '/Sepet/SiparisBasarili';
                 });
             } else {
                 Swal.fire({

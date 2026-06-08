@@ -1,10 +1,25 @@
-﻿@model IEnumerable<GraWat.Models.Siparis>
+@model IEnumerable<GraWat.Models.Siparis>
 
 @{
     ViewData["Title"] = "Sipariş Yönetimi ve Ciro";
 }
 
 <div class="container mt-5">
+
+    <!-- 👑 SAYFA BAŞLIĞI VE HIZLI GEÇİŞ BUTONU -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom text-start">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: #3b0f42;">
+                <i class="bi bi-shield-lock-fill text-warning me-2"></i> Sipariş Yönetimi
+            </h2>
+            <p class="text-muted mb-0 small">Mağaza siparişlerini, ciroları ve teslimat durumlarını buradan takip edebilirsiniz.</p>
+        </div>
+        <div class="mt-3 mt-md-0 text-start">
+            <a asp-controller="Urunler" asp-action="Index" class="btn btn-warning fw-bold shadow-sm rounded-pill px-4 py-2 border-2 d-inline-flex align-items-center" style="background-color: #FFCC00; border-color: #FFCC00; color: #3b0f42;">
+                <i class="bi bi-box-seam-fill me-2 fs-5"></i> Ürün ve Stok Yönetimi
+            </a>
+        </div>
+    </div>
 
     <!-- 💰 İSTATİSTİK VE CİRO KARTLARI -->
     <div class="row mb-4">
@@ -71,7 +86,7 @@
                                 </span>
                             </td>
                             <td>
-                                @if (item.Durum == "Hazırlanıyor")
+                                @if (item.Durum == "Hazırlanıyor" || item.Durum == "Bekliyor")
                                 {
                                     <span class="badge bg-warning text-dark px-3 rounded-pill">
                                         <i class="bi bi-clock-history me-1"></i> @item.Durum

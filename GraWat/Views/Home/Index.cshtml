@@ -18,6 +18,32 @@
     .filter-sidebar::-webkit-scrollbar-thumb:hover {
         background: rgba(59, 15, 66, 0.3);
     }
+
+    /* Akordeon Filtre Tasarımı */
+    .category-accordion-item {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-bottom: 8px;
+    }
+    .category-accordion-header {
+        background-color: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+    .category-accordion-header:hover {
+        background-color: #f1f3f5;
+    }
+    .category-accordion-header:hover span {
+        color: #3b0f42 !important;
+    }
+    .category-accordion-body {
+        transition: all 0.3s ease-in-out;
+    }
+    .category-checkbox:checked + .form-check-label {
+        color: #3b0f42 !important;
+        font-weight: 600;
+    }
 </style>
 
 <div class="container mt-5 mb-5">
@@ -65,20 +91,209 @@
 
                 <!-- Kategoriler -->
                 <div class="mb-4 text-start">
-                    <label class="form-label small fw-bold text-muted text-uppercase">Kategoriler</label>
+                    <label class="form-label small fw-bold text-muted text-uppercase mb-3">Kategoriler</label>
                     <div id="categoryFilterContainer">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input category-checkbox" type="checkbox" value="Makyaj" id="catMakyaj">
-                            <label class="form-check-label text-dark" for="catMakyaj">Makyaj</label>
+                        
+                        <!-- 1. Makyaj -->
+                        <div class="category-accordion-item mb-2">
+                            <div class="category-accordion-header d-flex align-items-center justify-content-between" style="cursor: pointer;">
+                                <span class="fw-bold text-dark small d-flex align-items-center">
+                                    <i class="bi bi-palette text-primary me-2"></i> Makyaj
+                                </span>
+                                <i class="bi bi-plus-lg toggle-icon text-muted small"></i>
+                            </div>
+                            <div class="category-accordion-body ps-3 mt-2" style="display: none; opacity: 0;">
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Makyaj" id="catMakyaj">
+                                    <label class="form-check-label small text-dark" for="catMakyaj">Tüm Makyaj</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Ruj" id="subRuj">
+                                    <label class="form-check-label small text-muted" for="subRuj">Ruj</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Maskara" id="subMaskara">
+                                    <label class="form-check-label small text-muted" for="subMaskara">Maskara</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Fondöten" id="subFondoten">
+                                    <label class="form-check-label small text-muted" for="subFondoten">Fondöten</label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input category-checkbox" type="checkbox" value="Cilt Bakım" id="catCilt">
-                            <label class="form-check-label text-dark" for="catCilt">Cilt Bakımı</label>
+
+                        <!-- 2. Cilt Bakım -->
+                        <div class="category-accordion-item mb-2">
+                            <div class="category-accordion-header d-flex align-items-center justify-content-between" style="cursor: pointer;">
+                                <span class="fw-bold text-dark small d-flex align-items-center">
+                                    <i class="bi bi-droplet-half text-info me-2"></i> Cilt Bakım
+                                </span>
+                                <i class="bi bi-plus-lg toggle-icon text-muted small"></i>
+                            </div>
+                            <div class="category-accordion-body ps-3 mt-2" style="display: none; opacity: 0;">
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Cilt Bakım" id="catCilt">
+                                    <label class="form-check-label small text-dark" for="catCilt">Tüm Cilt Bakımı</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Nemlendirici" id="subNemlendirici">
+                                    <label class="form-check-label small text-muted" for="subNemlendirici">Nemlendirici</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Yüz Temizleme Jeli" id="subTemizleme">
+                                    <label class="form-check-label small text-muted" for="subTemizleme">Yüz Temizleme Jeli</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Tonik" id="subTonik">
+                                    <label class="form-check-label small text-muted" for="subTonik">Tonik</label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input category-checkbox" type="checkbox" value="Parfüm/Deodorant" id="catParfum">
-                            <label class="form-check-label text-dark" for="catParfum">Parfüm / Deodorant</label>
+
+                        <!-- 3. Güneş Ürünleri -->
+                        <div class="category-accordion-item mb-2">
+                            <div class="category-accordion-header d-flex align-items-center justify-content-between" style="cursor: pointer;">
+                                <span class="fw-bold text-dark small d-flex align-items-center">
+                                    <i class="bi bi-sun text-warning me-2"></i> Güneş Ürünleri
+                                </span>
+                                <i class="bi bi-plus-lg toggle-icon text-muted small"></i>
+                            </div>
+                            <div class="category-accordion-body ps-3 mt-2" style="display: none; opacity: 0;">
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Güneş Ürünleri" id="catGunes">
+                                    <label class="form-check-label small text-dark" for="catGunes">Tüm Güneş Ürünleri</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Yüz Güneş Kremi" id="subYuzGunes">
+                                    <label class="form-check-label small text-muted" for="subYuzGunes">Yüz Güneş Kremi</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Vücut Güneş Kremi" id="subVucutGunes">
+                                    <label class="form-check-label small text-muted" for="subVucutGunes">Vücut Güneş Kremi</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Bronzlaştırıcı Yağ" id="subBronzYag">
+                                    <label class="form-check-label small text-muted" for="subBronzYag">Bronzlaştırıcı Yağ</label>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- 4. Saç Bakım -->
+                        <div class="category-accordion-item mb-2">
+                            <div class="category-accordion-header d-flex align-items-center justify-content-between" style="cursor: pointer;">
+                                <span class="fw-bold text-dark small d-flex align-items-center">
+                                    <i class="bi bi-scissors text-danger me-2"></i> Saç Bakım
+                                </span>
+                                <i class="bi bi-plus-lg toggle-icon text-muted small"></i>
+                            </div>
+                            <div class="category-accordion-body ps-3 mt-2" style="display: none; opacity: 0;">
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Saç Bakım" id="catSac">
+                                    <label class="form-check-label small text-dark" for="catSac">Tüm Saç Bakımı</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Şampuan" id="subSampuan">
+                                    <label class="form-check-label small text-muted" for="subSampuan">Şampuan</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Saç Kremi" id="subSacKremi">
+                                    <label class="form-check-label small text-muted" for="subSacKremi">Saç Kremi</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Saç Maskesi" id="subSacMaskesi">
+                                    <label class="form-check-label small text-muted" for="subSacMaskesi">Saç Maskesi</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Saç Boyası" id="subSacBoyasi">
+                                    <label class="form-check-label small text-muted" for="subSacBoyasi">Saç Boyası</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Parfüm & Deodorant -->
+                        <div class="category-accordion-item mb-2">
+                            <div class="category-accordion-header d-flex align-items-center justify-content-between" style="cursor: pointer;">
+                                <span class="fw-bold text-dark small d-flex align-items-center">
+                                    <i class="bi bi-flower1 text-success me-2"></i> Parfüm & Deodorant
+                                </span>
+                                <i class="bi bi-plus-lg toggle-icon text-muted small"></i>
+                            </div>
+                            <div class="category-accordion-body ps-3 mt-2" style="display: none; opacity: 0;">
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Parfüm/Deodorant" id="catParfum">
+                                    <label class="form-check-label small text-dark" for="catParfum">Tüm Parfüm & Deo</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Kadın Parfüm" id="subKadinParfum">
+                                    <label class="form-check-label small text-muted" for="subKadinParfum">Kadın Parfüm</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Erkek Parfüm" id="subErkekParfum">
+                                    <label class="form-check-label small text-muted" for="subErkekParfum">Erkek Parfüm</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Deodorant & Roll-on" id="subDeodorant">
+                                    <label class="form-check-label small text-muted" for="subDeodorant">Deodorant & Roll-on</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 6. Erkek Bakım -->
+                        <div class="category-accordion-item mb-2">
+                            <div class="category-accordion-header d-flex align-items-center justify-content-between" style="cursor: pointer;">
+                                <span class="fw-bold text-dark small d-flex align-items-center">
+                                    <i class="bi bi-person-fill-gear text-secondary me-2"></i> Erkek Bakım
+                                </span>
+                                <i class="bi bi-plus-lg toggle-icon text-muted small"></i>
+                            </div>
+                            <div class="category-accordion-body ps-3 mt-2" style="display: none; opacity: 0;">
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Erkek Bakım" id="catErkek">
+                                    <label class="form-check-label small text-dark" for="catErkek">Tüm Erkek Bakımı</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Tıraş Ürünleri" id="subTiras">
+                                    <label class="form-check-label small text-muted" for="subTiras">Tıraş Ürünleri</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Sakal & Bıyık Bakımı" id="subSakalBiyik">
+                                    <label class="form-check-label small text-muted" for="subSakalBiyik">Sakal & Bıyık Bakımı</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Erkek Cilt Bakımı" id="subErkekCilt">
+                                    <label class="form-check-label small text-muted" for="subErkekCilt">Erkek Cilt Bakımı</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. Kişisel Bakım -->
+                        <div class="category-accordion-item mb-2">
+                            <div class="category-accordion-header d-flex align-items-center justify-content-between" style="cursor: pointer;">
+                                <span class="fw-bold text-dark small d-flex align-items-center">
+                                    <i class="bi bi-heart-pulse-fill text-warning me-2"></i> Kişisel Bakım
+                                </span>
+                                <i class="bi bi-plus-lg toggle-icon text-muted small"></i>
+                            </div>
+                            <div class="category-accordion-body ps-3 mt-2" style="display: none; opacity: 0;">
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Kişisel Bakım" id="catKisisel">
+                                    <label class="form-check-label small text-dark" for="catKisisel">Tüm Kişisel Bakım</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Ağız & Diş Bakımı" id="subAgizDis">
+                                    <label class="form-check-label small text-muted" for="subAgizDis">Ağız & Diş Bakımı</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Duş Jeli & Banyo" id="subDusJeli">
+                                    <label class="form-check-label small text-muted" for="subDusJeli">Duş Jeli & Banyo</label>
+                                </div>
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input category-checkbox" type="checkbox" value="Kadın Hijyen Ürünleri" id="subKadinHijyen">
+                                    <label class="form-check-label small text-muted" for="subKadinHijyen">Kadın Hijyen Ürünleri</label>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -122,19 +337,81 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // URL Parametresinden Gelen Kategoriyi Seçili Yap
+            // URL Parametresinden Gelen Kategori ve Arama Kelimesini Seçili Yap ve Akordeonu Aç
             const urlParams = new URLSearchParams(window.location.search);
             const categoryParam = urlParams.get('kategori');
+            const searchParam = urlParams.get('searchString');
             
-            if (categoryParam) {
+            const openAndCheckAccordion = (value) => {
                 document.querySelectorAll('.category-checkbox').forEach(cb => {
                     const val = cb.value.toLowerCase();
-                    const param = categoryParam.toLowerCase();
-                    if (val === param || (param === 'cilt bakımı' && val === 'cilt bakım')) {
+                    const targetVal = value.toLowerCase();
+                    if (val === targetVal || (targetVal === 'cilt bakımı' && val === 'cilt bakım') || (targetVal === 'parfüm & deodorant' && val === 'parfüm/deodorant')) {
                         cb.checked = true;
+                        
+                        // İlgili akordeon gövdesini bul ve aç
+                        const body = cb.closest('.category-accordion-body');
+                        if (body) {
+                            body.style.display = "block";
+                            body.style.maxHeight = "500px";
+                            body.style.opacity = "1";
+                            
+                            const header = body.previousElementSibling;
+                            if (header) {
+                                const icon = header.querySelector('.toggle-icon');
+                                if (icon) {
+                                    icon.classList.remove('bi-plus-lg');
+                                    icon.classList.add('bi-dash-lg');
+                                }
+                                header.classList.add('bg-light');
+                            }
+                        }
                     }
                 });
+            };
+
+            if (categoryParam) {
+                openAndCheckAccordion(categoryParam);
             }
+            if (searchParam) {
+                openAndCheckAccordion(searchParam);
+            }
+
+            // Akordeon Aç/Kapat Mantığı
+            document.querySelectorAll('.category-accordion-header').forEach(header => {
+                header.addEventListener('click', function () {
+                    const body = this.nextElementSibling;
+                    const icon = this.querySelector('.toggle-icon');
+                    
+                    if (body.style.display === "none" || !body.style.display) {
+                        body.style.display = "block";
+                        body.style.maxHeight = "0px";
+                        body.style.opacity = "0";
+                        body.style.transition = "all 0.3s ease-in-out";
+                        
+                        setTimeout(() => {
+                            body.style.maxHeight = "500px";
+                            body.style.opacity = "1";
+                        }, 10);
+                        
+                        icon.classList.remove('bi-plus-lg');
+                        icon.classList.add('bi-dash-lg');
+                        this.classList.add('bg-light');
+                    } else {
+                        body.style.maxHeight = "0px";
+                        body.style.opacity = "0";
+                        body.style.transition = "all 0.3s ease-in-out";
+                        
+                        setTimeout(() => {
+                            body.style.display = "none";
+                        }, 300);
+                        
+                        icon.classList.remove('bi-dash-lg');
+                        icon.classList.add('bi-plus-lg');
+                        this.classList.remove('bg-light');
+                    }
+                });
+            });
 
             // AJAX Filtreleme İstek Fonksiyonu
             const applyFilters = () => {
@@ -208,6 +485,23 @@
                 document.getElementById('minPriceInput').value = '';
                 document.getElementById('maxPriceInput').value = '';
                 document.querySelectorAll('.category-checkbox').forEach(cb => cb.checked = false);
+                
+                // Akordeonları kapat
+                document.querySelectorAll('.category-accordion-body').forEach(body => {
+                    body.style.display = "none";
+                    body.style.maxHeight = "0px";
+                    body.style.opacity = "0";
+                    const header = body.previousElementSibling;
+                    if (header) {
+                        const icon = header.querySelector('.toggle-icon');
+                        if (icon) {
+                            icon.classList.remove('bi-dash-lg');
+                            icon.classList.add('bi-plus-lg');
+                        }
+                        header.classList.remove('bg-light');
+                    }
+                });
+                
                 applyFilters();
             });
         });

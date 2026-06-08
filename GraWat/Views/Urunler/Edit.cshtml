@@ -1,4 +1,4 @@
-﻿@model GraWat.Models.Urun
+@model GraWat.Models.Urun
 
 @{
     ViewData["Title"] = "Ürün Düzenle";
@@ -14,7 +14,7 @@
 
                 <div class="card-body bg-light">
                     <form asp-action="Edit" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div asp-validation-summary="All" class="text-danger"></div>
                         <input type="hidden" asp-for="Id" />
 
                         <div class="form-group mb-3">
@@ -33,7 +33,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label asp-for="Fiyat" class="control-label fw-bold text-dark">Fiyat (₺)</label>
-                                    <input asp-for="Fiyat" class="form-control border-primary" />
+                                    <input type="text" asp-for="Fiyat" class="form-control border-primary" />
                                     <span asp-validation-for="Fiyat" class="text-danger"></span>
                                 </div>
                             </div>
@@ -57,7 +57,7 @@
 
                                 <input type="file" name="resimDosyasi" class="form-control" accept="image/*" />
                                 <input type="hidden" asp-for="ResimYolu" />
-                            </div>-
+                            </div>
                         </div>
 
                         <div class="form-group text-center mt-4">
@@ -80,4 +80,18 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $(document).ready(function () {
+            if ($.validator) {
+                $.extend($.validator.messages, {
+                    number: "Lütfen geçerli bir sayı veya kuruşlu fiyat (örn: 150,50) giriniz."
+                });
+                
+                // ASP.NET Core varsayılan "The field Fiyat must be a number." İngilizce mesajını Türkçe olarak ezelim
+                $('input[data-val-number]').each(function() {
+                    $(this).attr('data-val-number', "Lütfen geçerli bir sayı veya kuruşlu fiyat (örn: 150,50) giriniz.");
+                });
+            }
+        });
+    </script>
 }
