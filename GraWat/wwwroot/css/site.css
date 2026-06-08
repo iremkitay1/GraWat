@@ -21,9 +21,15 @@ body {
   margin-bottom: 60px;
 }
 
-/* SweetAlert2 Toast'u sabit navbar'in altina kaydirmak icin */
+/* SweetAlert2 Toast'u sabit navbar'in altina kaydirmak ve en ustte gostermek icin */
 .navbar-under-toast {
   margin-top: 75px !important;
+  z-index: 99999 !important;
+}
+
+/* SweetAlert2 container'ının kendisi için de z-index ezmesi yapalım */
+.swal2-container {
+  z-index: 99999 !important;
 }
 
 /* --- AKILLI GÜZELLİK ASİSTANI CHAT WIDGET STİLLERİ --- */

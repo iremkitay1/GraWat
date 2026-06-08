@@ -73,12 +73,13 @@ namespace GraWat.Controllers
 
                 var filtrelenmişUrunler = _context.Urunler
                                                 .Where(u => urunIdleri.Contains(u.Id))
+                                                .OrderByDescending(u => u.Id)
                                                 .ToList();
 
                 return View(filtrelenmişUrunler);
             }
 
-            var tumUrunler = _context.Urunler.ToList();
+            var tumUrunler = _context.Urunler.OrderByDescending(u => u.Id).ToList();
             return View(tumUrunler);
         }
 
@@ -88,7 +89,7 @@ namespace GraWat.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("Id,Ad,Kategori,Fiyat,StokAdedi")] Urun urun, IFormFile resimDosyasi)
+        public async Task<IActionResult> Create([Bind("Id,Ad,Kategori,Fiyat,StokAdedi")] Urun urun, IFormFile? resimDosyasi)
         {
             if (ModelState.IsValid)
             {

@@ -1,4 +1,4 @@
-﻿@model GraWat.Models.Urun
+@model GraWat.Models.Urun
 
 @{
     ViewData["Title"] = "Yeni Ürün Ekle";
@@ -14,7 +14,7 @@
 
                 <div class="card-body bg-light">
                     <form asp-action="Create" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div asp-validation-summary="All" class="text-danger"></div>
 
                         <div class="form-group mb-3">
                             <label asp-for="Ad" class="control-label fw-bold text-dark">Ürün Adı</label>
@@ -32,7 +32,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label asp-for="Fiyat" class="control-label fw-bold text-dark">Fiyat (₺)</label>
-                                    <input asp-for="Fiyat" class="form-control border-secondary" placeholder="0.00" />
+                                    <input type="text" asp-for="Fiyat" class="form-control border-secondary" placeholder="0.00" />
                                     <span asp-validation-for="Fiyat" class="text-danger"></span>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@
                         </div>
 
                         <div class="form-group mt-4">
-                            <input type="submit" value="Kaydet" class="btn btn-success fw-bold px-5" style="border-radius: 30px;" />
+                            <button type="submit" class="btn btn-success fw-bold px-5" style="border-radius: 30px;">Kaydet</button>
                         </div>
                     </form>
                 </div>
@@ -73,4 +73,18 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $(document).ready(function () {
+            if ($.validator) {
+                $.extend($.validator.messages, {
+                    number: "Lütfen geçerli bir sayı veya kuruşlu fiyat (örn: 150,50) giriniz."
+                });
+                
+                // ASP.NET Core varsayılan "The field Fiyat must be a number." İngilizce mesajını Türkçe olarak ezelim
+                $('input[data-val-number]').each(function() {
+                    $(this).attr('data-val-number', "Lütfen geçerli bir sayı veya kuruşlu fiyat (örn: 150,50) giriniz.");
+                });
+            }
+        });
+    </script>
 }

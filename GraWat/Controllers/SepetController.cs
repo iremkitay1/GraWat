@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using GraWat.Data;
 using GraWat.Models;
 using System.Security.Claims;
@@ -120,11 +121,54 @@ namespace GraWat.Controllers
             return View();
         }
 
-        // SİPARİŞİ ONAYLAMA (Eksiksiz Ürün Detay Kaydeden Versiyon 🚀)
+        // SİPARİŞİ ONAYLAMA (Stok Kontrolü, Stok Düşüşü ve Atomik Save Destekli Versiyon 🚀)
         [HttpPost]
-        public async Task<IActionResult> SiparisOnayla(string odemeYontemi)
+        public async Task<IActionResult> SiparisOnayla(
+            string odemeYontemi,
+            string? kartIsim = null,
+            string? cardNo = null,
+            string? expiryDate = null,
+            string? cvv = null)
         {
             var kullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Ödeme yöntemi kapıda ödeme ise kart doğrulamalarını ModelState'den temizliyoruz
+            if (odemeYontemi == "Kapıda Nakit" || odemeYontemi == "Kapıda Kart" || odemeYontemi == "Kapıda Kredi Kartı")
+            {
+                ModelState.Remove("CardNumber");
+                ModelState.Remove("cardNo");
+                ModelState.Remove("kartIsim");
+                ModelState.Remove("expiryDate");
+                ModelState.Remove("cvv");
+            }
+            else
+            {
+                // Kredi kartı seçildiyse kart alanlarını el ile doğruluyoruz
+                if (string.IsNullOrWhiteSpace(kartIsim))
+                {
+                    ModelState.AddModelError("kartIsim", "Kart üzerindeki isim alanı zorunludur.");
+                }
+                if (string.IsNullOrWhiteSpace(cardNo) || cardNo.Replace(" ", "").Length < 16)
+                {
+                    ModelState.AddModelError("cardNo", "Lütfen 16 haneli geçerli bir kart numarası giriniz.");
+                }
+                if (string.IsNullOrWhiteSpace(expiryDate) || !expiryDate.Contains("/") || expiryDate.Length != 5)
+                {
+                    ModelState.AddModelError("expiryDate", "Son kullanma tarihi MM/YY formatında olmalıdır.");
+                }
+                if (string.IsNullOrWhiteSpace(cvv) || cvv.Length != 3)
+                {
+                    ModelState.AddModelError("cvv", "CVV kodu 3 haneli olmalıdır.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errors = string.Join(" | ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                return Json(new { success = false, message = "Lütfen alanları kontrol ediniz: " + errors });
+            }
 
             // 1. Sepeti fiyatlarla birlikte çekiyoruz
             var kullaniciSepeti = await _context.SepetItems
@@ -137,48 +181,81 @@ namespace GraWat.Controllers
                 return Json(new { success = false, message = "Sepetiniz boş!" });
             }
 
-            // 2. Toplam tutarı hesaplıyoruz
-            decimal gercekToplamTutar = kullaniciSepeti.Sum(item => item.Adet * item.Urun.Fiyat);
-
-            // 3. Yeni Siparişi Oluşturuyoruz
-            var yeniSiparis = new GraWat.Models.Siparis
-            {
-                KullaniciId = kullaniciId,
-                SiparisTarihi = DateTime.Now,
-                ToplamTutar = gercekToplamTutar,
-                Durum = "Hazırlanıyor",
-                OdemeYontemi = odemeYontemi ?? "Kredi Kartı"
-            };
-
-            // 4. Önce Ana Siparişi Kaydediyoruz (Böylece veritabanı otomatik bir Siparis.Id üretecek)
-            _grawatContext.Siparisler.Add(yeniSiparis);
-            await _grawatContext.SaveChangesAsync();
-
-            // =================================================================
-            // 🚀 EKSİK OLAN KISIM BURASIYDI: Sipariş Kalemlerini Tek Tek Kaydediyoruz
-            // =================================================================
+            // 2. Güvenlik ve Stok Kontrolü (Validation)
             foreach (var sepetUrunu in kullaniciSepeti)
             {
-                var yeniKalem = new SiparisKalemi
+                // Güncel veritabanı stok durumunu sorguluyoruz
+                var urun = await _context.Urunler.FindAsync(sepetUrunu.UrunId);
+                if (urun == null || urun.StokAdedi < sepetUrunu.Adet)
                 {
-                    SiparisId = yeniSiparis.Id, // Üstte oluşan siparişin ID'sini bağlıyoruz
-                    UrunId = sepetUrunu.UrunId,
-                    Adet = sepetUrunu.Adet,
-                    Fiyat = sepetUrunu.Urun.Fiyat
-                };
-
-                _grawatContext.SiparisKalemleri.Add(yeniKalem);
+                    return Json(new { success = false, message = "Üzgünüz, bazı ürünlerin stoğu tükenmiş veya yetersiz." });
+                }
             }
 
-            // Tüm ürün kalemlerini veritabanına topluca kaydediyoruz
-            await _grawatContext.SaveChangesAsync();
-            // =================================================================
+            // 3. Atomik Veritabanı İşlemleri (Tek bir _context nesnesi üzerinden transaction kullanarak veri bütünlüğünü koruyoruz 🚀)
+            await using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    // 3.1. Toplam tutarı hesaplıyoruz
+                    decimal gercekToplamTutar = kullaniciSepeti.Sum(item => item.Adet * item.Urun.Fiyat);
 
-            // 5. Sepeti ApplicationDbContext (SepetItems Tablosu) üzerinden temizliyoruz
-            _context.SepetItems.RemoveRange(kullaniciSepeti);
-            await _context.SaveChangesAsync();
+                    // 3.2. Yeni Siparişi Oluşturuyoruz (Kapıda ödemeler için status 'Bekliyor')
+                    var yeniSiparis = new GraWat.Models.Siparis
+                    {
+                        KullaniciId = kullaniciId,
+                        SiparisTarihi = DateTime.Now,
+                        ToplamTutar = gercekToplamTutar,
+                        Durum = (odemeYontemi == "Kapıda Nakit" || odemeYontemi == "Kapıda Kart" || odemeYontemi == "Kapıda Kredi Kartı") ? "Bekliyor" : "Hazırlanıyor",
+                        OdemeYontemi = odemeYontemi ?? "Kredi Kartı"
+                    };
 
-            return Json(new { success = true, message = "Siparişiniz başarıyla alındı!" });
+                    _context.Siparisler.Add(yeniSiparis);
+                    await _context.SaveChangesAsync(); // SiparisId üretilmesi için
+
+                    // 3.3. Sipariş Kalemlerini ve Stok Düşümlerini gerçekleştiriyoruz
+                    foreach (var sepetUrunu in kullaniciSepeti)
+                    {
+                        var urun = await _context.Urunler.FindAsync(sepetUrunu.UrunId);
+                        if (urun == null || urun.StokAdedi < sepetUrunu.Adet)
+                        {
+                            throw new InvalidOperationException("Yetersiz stok veya geçersiz ürün.");
+                        }
+
+                        // Stok düşme işlemi (Deduction)
+                        urun.StokAdedi -= sepetUrunu.Adet;
+
+                        var yeniKalem = new SiparisKalemi
+                        {
+                            SiparisId = yeniSiparis.Id,
+                            UrunId = sepetUrunu.UrunId,
+                            Adet = sepetUrunu.Adet,
+                            Fiyat = sepetUrunu.Urun.Fiyat
+                        };
+
+                        _context.SiparisKalemleri.Add(yeniKalem);
+                    }
+
+                    // Sipariş kalemlerini ve stok güncellemelerini kaydediyoruz
+                    await _context.SaveChangesAsync();
+
+                    // 3.4. Sepeti temizliyoruz
+                    _context.SepetItems.RemoveRange(kullaniciSepeti);
+                    await _context.SaveChangesAsync();
+
+                    // Her şey başarılı olduysa işlemleri onaylayıp kaydediyoruz
+                    await transaction.CommitAsync();
+
+                    return Json(new { success = true, message = "Siparişiniz başarıyla alındı!" });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    Console.WriteLine("Sipariş Onaylama Hatası (Try-Catch): " + ex.ToString());
+                    ModelState.AddModelError("Exception", ex.Message);
+                    return Json(new { success = false, message = "Sipariş işlenirken bir hata oluştu: " + ex.Message });
+                }
+            }
         }
 
         public IActionResult SiparisBasarili()
