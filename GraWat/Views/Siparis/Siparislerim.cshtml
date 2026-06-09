@@ -7,6 +7,24 @@
 <div class="container mt-5 mb-5">
     <div class="row mb-4">
         <div class="col-12">
+            @if (TempData["SiparisHata"] != null)
+            {
+                <div class="alert alert-danger rounded-4 px-4 py-3 shadow-sm border-0 mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["SiparisHata"]
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger rounded-4 px-4 py-3 shadow-sm border-0 mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+                </div>
+            }
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success rounded-4 px-4 py-3 shadow-sm border-0 mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                </div>
+            }
             <div class="card bg-dark text-white border-0 rounded-4 shadow-sm p-4 d-flex flex-row align-items-center welcome-card">
                 <div class="icon-circle bg-warning text-dark me-4 shadow">
                     <i class="bi bi-bag-heart-fill fs-2"></i>
@@ -69,23 +87,96 @@
 
                             <hr class="text-muted opacity-25">
 
-                            <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
                                 <div class="text-muted small text-uppercase fw-bold">Toplam Tutar</div>
                                 <div class="fs-4 fw-bold text-success">@item.ToplamTutar.ToString("C2")</div>
                             </div>
 
-                            <a asp-controller="Siparis"
-                               asp-action="Degerlendir"
-                               asp-route-urunId="@item.Id"
-                               class="btn btn-outline-dark w-100 mt-3 rounded-pill fw-bold">
-                                Ürünleri Değerlendir <i class="bi bi-star-fill text-warning ms-2"></i>
-                            </a>
+                            @if (item.SiparisKalemleri != null && item.SiparisKalemleri.Any())
+                            {
+                                <hr class="text-muted opacity-25">
+                                <div class="order-items-list">
+                                    <h6 class="text-muted small fw-bold mb-2">Sipariş İçeriği:</h6>
+                                    @foreach (var kalem in item.SiparisKalemleri)
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded bg-light" style="font-size: 0.9rem;">
+                                            <div class="d-flex align-items-center">
+                                                <div class="product-thumb-small bg-white rounded me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border: 1px solid #eee; overflow: hidden;">
+                                                    @{
+                                                        var itemImg = !string.IsNullOrEmpty(kalem.Urun?.ResimYolu) && kalem.Urun.ResimYolu.StartsWith("http") 
+                                                            ? kalem.Urun.ResimYolu 
+                                                            : $"/img/{kalem.Urun?.ResimYolu}";
+                                                    }
+                                                    <img src="@itemImg" alt="@kalem.Urun?.Ad" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+                                                </div>
+                                                <div>
+                                                    <span class="fw-semibold text-dark d-block text-truncate" style="max-width: 130px;" title="@kalem.Urun?.Ad">@kalem.Urun?.Ad</span>
+                                                    <span class="text-muted small d-block">@kalem.Adet adet x @kalem.Fiyat.ToString("C2")</span>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-success mt-2 d-block btn-degerlendir-modal"
+                                                            onclick="openReviewModal('@kalem.UrunId', '@kalem.Urun?.Ad', '@item.Id')"
+                                                            data-productid="@kalem.UrunId"
+                                                            data-productname="@kalem.Urun?.Ad"
+                                                            data-orderid="@item.Id">
+                                                        ⭐ Ürünü Değerlendir
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
             }
         </div>
     }
+</div>
+
+<!-- Değerlendirme Modalı -->
+<div class="modal fade" id="degerlendirmeModal" tabindex="-1" aria-labelledby="degerlendirmeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white border-0" style="background-color: #5c1866;">
+                <h5 class="modal-title fw-bold" id="degerlendirmeModalLabel">✨ Ürünü Değerlendir</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <form asp-controller="Siparis" asp-action="TekliYorumKaydet" method="post">
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" name="siparisId" id="modalSiparisId" />
+                    <input type="hidden" name="urunId" id="modalUrunId" />
+                    
+                    <div class="text-center mb-4">
+                        <span class="text-muted small d-block">Değerlendirilen Ürün:</span>
+                        <h5 class="fw-bold text-dark mt-1" id="modalProductName">Ürün Adı</h5>
+                    </div>
+
+                    <div class="mb-4 text-center">
+                        <label class="form-label d-block fw-bold text-dark small mb-2">Ürüne Puanınız:</label>
+                        <div class="star-rating-modal fs-2">
+                            <input type="radio" id="modal_star5" name="puan" value="5" required /><label for="modal_star5">★</label>
+                            <input type="radio" id="modal_star4" name="puan" value="4" /><label for="modal_star4">★</label>
+                            <input type="radio" id="modal_star3" name="puan" value="3" /><label for="modal_star3">★</label>
+                            <input type="radio" id="modal_star2" name="puan" value="2" /><label for="modal_star2">★</label>
+                            <input type="radio" id="modal_star1" name="puan" value="1" /><label for="modal_star1">★</label>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <textarea name="yorumMetni" id="modalYorumMetni" class="form-control" placeholder="Bu ürün hakkındaki deneyimleriniz..." style="height: 120px; border-radius: 12px;" required></textarea>
+                        <label for="modalYorumMetni">Deneyimleriniz ve Yorumunuz...</label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light pt-0 pb-4 px-4 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill fw-bold px-4" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn text-white rounded-pill fw-bold px-4 shadow-sm" style="background-color: #5c1866;">
+                        Gönder 🚀
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -114,6 +205,30 @@
             border-color: #5c1866 !important; /* GraWat Moru ile şık bütünlük */
         }
 
+    .star-rating-modal {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .star-rating-modal input {
+        display: none;
+    }
+
+    .star-rating-modal label {
+        color: #ddd;
+        cursor: pointer;
+        font-size: 2.5rem;
+        transition: color 0.2s ease-in-out;
+    }
+
+    .star-rating-modal input:checked ~ label,
+    .star-rating-modal label:hover,
+    .star-rating-modal label:hover ~ label {
+        color: #ffc107;
+    }
+
     @@keyframes fadeInDown {
         from {
             opacity: 0;
@@ -126,3 +241,30 @@
         }
     }
 </style>
+
+@section Scripts {
+    <script>
+        function openReviewModal(productId, productName, orderId) {
+            $('#modalSiparisId').val(orderId);
+            $('#modalUrunId').val(productId);
+            $('#modalProductName').text(productName);
+            $('#degerlendirmeModalLabel').text("✨ " + productName + " Ürününü Değerlendir");
+
+            // Reset modal form fields
+            $('#modalYorumMetni').val('');
+            $('input[name="puan"]').prop('checked', false);
+
+            // Show modal
+            $('#degerlendirmeModal').modal('show');
+        }
+
+        $(document).ready(function () {
+            $('.btn-degerlendir-modal').on('click', function () {
+                var productId = $(this).data('productid');
+                var productName = $(this).data('productname');
+                var orderId = $(this).data('orderid');
+                openReviewModal(productId, productName, orderId);
+            });
+        });
+    </script>
+}

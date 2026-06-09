@@ -30,5 +30,8 @@ namespace GraWat.Models
         public int StokAdedi { get; set; }
 
         public string? ResimYolu { get; set; }
+
+        public double AverageRating { get; set; } = 0.0;
+        public int TotalReviews { get; set; } = 0;
     }
 }
