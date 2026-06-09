@@ -30,6 +30,8 @@ namespace GraWat.Controllers
             var kullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var siparisler = await _grawatContext.Siparisler
+                .Include(s => s.SiparisKalemleri)
+                    .ThenInclude(sk => sk.Urun)
                 .Where(s => s.KullaniciId == kullaniciId)
                 .OrderByDescending(s => s.SiparisTarihi)
                 .ToListAsync();
@@ -104,6 +106,7 @@ namespace GraWat.Controllers
         public async Task<IActionResult> Degerlendir(int urunId)
         {
             int siparisId = urunId;
+            var kullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var siparis = await _grawatContext.Siparisler
                 .FirstOrDefaultAsync(s => s.Id == siparisId);
@@ -111,6 +114,12 @@ namespace GraWat.Controllers
             if (siparis == null)
             {
                 return NotFound();
+            }
+
+            if (siparis.KullaniciId != kullaniciId)
+            {
+                TempData["ErrorMessage"] = "Sadece tamamlanmış siparişlerdeki ürünleri değerlendirebilirsiniz.";
+                return RedirectToAction("Siparislerim");
             }
 
             // 🛠️ Veritabanındaki SiparisKalemleri tablosunda bu sipariş numarasına ait satır sayısını buluyoruz
@@ -153,26 +162,58 @@ namespace GraWat.Controllers
             var kullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var kullaniciAdi = User.Identity.Name ?? "Değerli Müşterimiz";
 
-            if (model != null && model.Urunler != null && model.Urunler.Any())
+            if (model == null)
             {
-                foreach (var item in model.Urunler)
-                {
-                    var yeniYorum = new Yorum
-                    {
-                        UrunId = item.UrunId,
-                        KullaniciId = kullaniciId,
-                        KullaniciAdi = kullaniciAdi,
-                        Puan = item.Puan,
-                        YorumMetni = item.YorumMetni,
-                        Tarih = DateTime.Now
-                    };
-
-                    _grawatContext.Yorumlar.Add(yeniYorum);
-                }
-
-                await _grawatContext.SaveChangesAsync();
+                TempData["ErrorMessage"] = "Değerlendirme modeli bulunamadı.";
+                return RedirectToAction("Siparislerim");
             }
 
+            // Sipariş durumu kontrolü
+            bool canReview = await _grawatContext.Siparisler.AnyAsync(o => 
+                o.Id == model.SiparisId && 
+                o.KullaniciId == kullaniciId);
+
+            if (!canReview)
+            {
+                TempData["ErrorMessage"] = "Sadece tamamlanmış siparişlerdeki ürünleri değerlendirebilirsiniz.";
+                return RedirectToAction("Siparislerim");
+            }
+
+                if (model.Urunler != null && model.Urunler.Any())
+                {
+                    foreach (var item in model.Urunler)
+                    {
+                        var yeniYorum = new Yorum
+                        {
+                            UrunId = item.UrunId,
+                            KullaniciId = kullaniciId,
+                            KullaniciAdi = kullaniciAdi,
+                            Puan = item.Puan,
+                            YorumMetni = item.YorumMetni,
+                            Tarih = DateTime.Now
+                        };
+
+                        _grawatContext.Yorumlar.Add(yeniYorum);
+                    }
+
+                    await _grawatContext.SaveChangesAsync();
+
+                    // Her bir ürünün puan ortalamasını ve toplam değerlendirme adedini hesapla ve güncelle
+                    var productIds = model.Urunler.Select(item => item.UrunId).Distinct().ToList();
+                    foreach (var urunId in productIds)
+                    {
+                        var product = await _grawatContext.Urunler.FindAsync(urunId);
+                        if (product != null)
+                        {
+                            var productReviews = await _grawatContext.Yorumlar.Where(y => y.UrunId == urunId).ToListAsync();
+                            product.TotalReviews = productReviews.Count;
+                            product.AverageRating = productReviews.Any() ? productReviews.Average(r => r.Puan) : 0.0;
+                        }
+                    }
+                    await _grawatContext.SaveChangesAsync();
+                }
+
+            TempData["SuccessMessage"] = "Değerlendirmeniz başarıyla eklendi!";
             return RedirectToAction("Siparislerim");
         }
         // ---------------------------------------------------------
@@ -185,6 +226,18 @@ namespace GraWat.Controllers
             // Giriş yapan kullanıcının bilgilerini alıyoruz
             var kullaniciId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var kullaniciAdi = User.Identity.Name ?? "Değerli Müşterimiz";
+
+            // Sipariş durumu kontrolü
+            bool canReview = await _grawatContext.Siparisler.AnyAsync(o => 
+                o.Id == siparisId && 
+                o.KullaniciId == kullaniciId && 
+                o.SiparisKalemleri.Any(sk => sk.UrunId == urunId));
+
+            if (!canReview)
+            {
+                TempData["ErrorMessage"] = "Sadece tamamlanmış siparişlerdeki ürünleri değerlendirebilirsiniz.";
+                return RedirectToAction("Siparislerim");
+            }
 
             // Gelen verilerle tek bir Yorum nesnesi oluşturuyoruz
             var yeniYorum = new Yorum
@@ -200,9 +253,20 @@ namespace GraWat.Controllers
             _grawatContext.Yorumlar.Add(yeniYorum);
             await _grawatContext.SaveChangesAsync();
 
+            // Ürünün puan ortalamasını ve toplam değerlendirme adedini hesapla ve güncelle
+            var product = await _grawatContext.Urunler.FindAsync(urunId);
+            if (product != null)
+            {
+                var productReviews = await _grawatContext.Yorumlar.Where(y => y.UrunId == urunId).ToListAsync();
+                product.TotalReviews = productReviews.Count;
+                product.AverageRating = productReviews.Any() ? productReviews.Average(r => r.Puan) : 0.0;
+                await _grawatContext.SaveChangesAsync();
+            }
+
             // Kullanıcı yorumu kaydettiğinde sayfayı yeniliyoruz ki 
-            // kaldığı yerden (aynı siparişteki) diğer ürünleri de isterse yorumlayabilsin!
-            return RedirectToAction("Degerlendir", new { urunId = siparisId });
+            // güncel değerlendirmeleri ve puan ortalamasını görebilsin!
+            TempData["SuccessMessage"] = "Değerlendirmeniz başarıyla eklendi!";
+            return RedirectToAction("Siparislerim");
         }
     }
 }

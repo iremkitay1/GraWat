@@ -53,13 +53,28 @@ else
                         @* Yıldızlı Değerlendirme *@
                         <div class="d-flex align-items-center mb-3">
                             <div class="text-warning me-2" style="font-size: 0.85rem;">
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
+                                @{
+                                    var avg = urun.AverageRating;
+                                    for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (avg >= i)
+                                        {
+                                            <i class="bi bi-star-fill"></i>
+                                        }
+                                        else if (avg > (i - 1) && avg < i)
+                                        {
+                                            <i class="bi bi-star-half"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-star"></i>
+                                        }
+                                    }
+                                }
                             </div>
-                            <span class="text-muted" style="font-size: 0.8rem; font-weight: 500;">(5.0)</span>
+                            <span class="text-muted" style="font-size: 0.8rem; font-weight: 500;">
+                                @(urun.AverageRating > 0 ? urun.AverageRating.ToString("F1") : "0.0") (@urun.TotalReviews Değerlendirme)
+                            </span>
                         </div>
                     </div>
 

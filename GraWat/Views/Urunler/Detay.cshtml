@@ -8,12 +8,43 @@
     <div class="row g-5">
         <div class="col-md-6">
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <img src="~/img/@Model.ResimYolu" class="img-fluid w-100" alt="@Model.Ad" style="max-height: 500px; object-fit: cover;">
+                @{
+                    var imgSrc = !string.IsNullOrEmpty(Model.ResimYolu) && Model.ResimYolu.StartsWith("http") ? Model.ResimYolu : $"/img/{Model.ResimYolu}";
+                }
+                <img src="@imgSrc" class="img-fluid w-100" alt="@Model.Ad" style="max-height: 500px; object-fit: cover;">
             </div>
         </div>
 
         <div class="col-md-6">
             <h1 class="display-5 fw-bold text-dark">@Model.Ad</h1>
+            
+            @* Yıldızlı Değerlendirme *@
+            <div class="d-flex align-items-center mb-3">
+                <div class="text-warning me-2" style="font-size: 1.1rem;">
+                    @{
+                        var avg = Model.AverageRating;
+                        for (int i = 1; i <= 5; i++)
+                        {
+                            if (avg >= i)
+                            {
+                                <i class="bi bi-star-fill"></i>
+                            }
+                            else if (avg > (i - 1) && avg < i)
+                            {
+                                <i class="bi bi-star-half"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-star"></i>
+                            }
+                        }
+                    }
+                </div>
+                <span class="text-muted fw-bold" style="font-size: 0.95rem;">
+                    @(Model.AverageRating > 0 ? Model.AverageRating.ToString("F1") : "0.0") (@Model.TotalReviews Değerlendirme)
+                </span>
+            </div>
+
             <p class="fs-4 text-success fw-bold">@Model.Fiyat.ToString("C2")</p>
             <hr class="my-4 opacity-25">
             <p class="text-muted lh-base">@Model.Kategori</p>
@@ -30,23 +61,37 @@
         <div class="col-md-5">
             <div class="card border-0 shadow-sm rounded-4 p-4 bg-light">
                 <h5 class="fw-bold mb-3">Puan Verin ve Yorum Yapın</h5>
-                <form asp-controller="Urunler" asp-action="YorumEkle" method="post">
-                    <input type="hidden" name="UrunId" value="@Model.Id" />
-                    <div class="mb-3 text-warning fs-3 rating-area">
-                        <select name="Puan" class="form-select">
-                            <option value="5">⭐⭐⭐⭐⭐</option>
-                            <option value="4">⭐⭐⭐⭐</option>
-                            <option value="3">⭐⭐⭐</option>
-                            <option value="2">⭐⭐</option>
-                            <option value="1">⭐</option>
-                        </select>
+                @if (ViewBag.HasPurchased == true)
+                {
+                    @if (TempData["YorumHata"] != null)
+                    {
+                        <div class="alert alert-danger small mb-3">@TempData["YorumHata"]</div>
+                    }
+                    <form asp-controller="Urunler" asp-action="YorumEkle" method="post">
+                        <input type="hidden" name="UrunId" value="@Model.Id" />
+                        <div class="mb-3 text-warning fs-3 rating-area">
+                            <select name="Puan" class="form-select">
+                                <option value="5">⭐⭐⭐⭐⭐</option>
+                                <option value="4">⭐⭐⭐⭐</option>
+                                <option value="3">⭐⭐⭐</option>
+                                <option value="2">⭐⭐</option>
+                                <option value="1">⭐</option>
+                            </select>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" name="YorumMetni" style="height: 100px" required></textarea>
+                            <label>Yorumunuz...</label>
+                        </div>
+                        <button type="submit" class="btn btn-dark text-warning fw-bold w-100 rounded-pill">Gönder</button>
+                    </form>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-shield-lock text-muted fs-1 mb-3 d-block"></i>
+                        <p class="text-muted small mb-0">Bu ürünü değerlendirebilmek için önce satın almalı ve siparişinizi tamamlamalısınız. 🔒</p>
                     </div>
-                    <div class="form-floating mb-3">
-                        <textarea class="form-control" name="YorumMetni" style="height: 100px" required></textarea>
-                        <label>Yorumunuz...</label>
-                    </div>
-                    <button type="submit" class="btn btn-dark text-warning fw-bold w-100 rounded-pill">Gönder</button>
-                </form>
+                }
             </div>
         </div>
 

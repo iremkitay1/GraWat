@@ -3,6 +3,7 @@ using GraWat.Data;
 using Microsoft.AspNetCore.Authorization;
 using GraWat.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace GraWat.Controllers
 {
@@ -31,6 +32,17 @@ namespace GraWat.Controllers
                 .OrderByDescending(x => x.Tarih)
                 .ToList();
 
+            // Doğrulanmış alıcı kontrolü
+            bool hasPurchased = false;
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                hasPurchased = await _context.Siparisler
+                    .AnyAsync(s => s.KullaniciId == userId && 
+                                   s.SiparisKalemleri.Any(sk => sk.UrunId == id));
+            }
+            ViewBag.HasPurchased = hasPurchased;
+
             return View("Detay", urun);
         }
 
@@ -38,6 +50,23 @@ namespace GraWat.Controllers
         [Authorize] // Sadece giriş yapan müşteriler yorum ekleyebilir (Admin olması şart değil)
         public async Task<IActionResult> YorumEkle(int UrunId, int Puan, string YorumMetni)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+
+            // Doğrulanmış alıcı kontrolü
+            var hasPurchased = await _context.Siparisler
+                .AnyAsync(s => s.KullaniciId == userId && 
+                               s.SiparisKalemleri.Any(sk => sk.UrunId == UrunId));
+
+            if (!hasPurchased)
+            {
+                TempData["YorumHata"] = "Sadece tamamlanmış siparişlerdeki ürünleri değerlendirebilirsiniz.";
+                return RedirectToAction(nameof(Details), new { id = UrunId });
+            }
+
             if (!string.IsNullOrEmpty(YorumMetni))
             {
                 var yeniYorum = new Yorum
@@ -45,13 +74,23 @@ namespace GraWat.Controllers
                     UrunId = UrunId,
                     Puan = Puan,
                     YorumMetni = YorumMetni,
-                    KullaniciId = User.Identity.Name,
+                    KullaniciId = userId,
                     KullaniciAdi = User.Identity.Name.Split('@')[0],
                     Tarih = DateTime.Now
                 };
 
                 _context.Yorumlar.Add(yeniYorum);
                 await _context.SaveChangesAsync();
+
+                // Ürünün puan ortalamasını ve toplam değerlendirme adedini güncelle
+                var product = await _context.Urunler.FindAsync(UrunId);
+                if (product != null)
+                {
+                    var productReviews = await _context.Yorumlar.Where(y => y.UrunId == UrunId).ToListAsync();
+                    product.TotalReviews = productReviews.Count;
+                    product.AverageRating = productReviews.Any() ? productReviews.Average(r => r.Puan) : 0.0;
+                    await _context.SaveChangesAsync();
+                }
             }
 
             return RedirectToAction(nameof(Details), new { id = UrunId });
@@ -184,8 +223,19 @@ namespace GraWat.Controllers
             var yorum = await _context.Yorumlar.FindAsync(id);
             if (yorum != null)
             {
+                var urunId = yorum.UrunId;
                 _context.Yorumlar.Remove(yorum);
                 await _context.SaveChangesAsync();
+
+                // Yorum silindikten sonra ürünün ortalamasını ve değerlendirme sayısını yeniden hesapla
+                var product = await _context.Urunler.FindAsync(urunId);
+                if (product != null)
+                {
+                    var productReviews = await _context.Yorumlar.Where(y => y.UrunId == urunId).ToListAsync();
+                    product.TotalReviews = productReviews.Count;
+                    product.AverageRating = productReviews.Any() ? productReviews.Average(r => r.Puan) : 0.0;
+                    await _context.SaveChangesAsync();
+                }
             }
             return RedirectToAction(nameof(Yorumlar));
         }
